@@ -8,9 +8,14 @@ import {
   StatusBar,
   TextInput,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons, AntDesign } from "@expo/vector-icons";
+import {
+  Ionicons,
+  AntDesign,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -21,23 +26,125 @@ export default function cadastro() {
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
   const [passo, setPasso] = useState<string>("nome");
-  const [error, setError] = useState<boolean>(false);
+  const [mensagemErro, setMensagemErro] = useState<string>("");
   const [carregando, setCarregando] = useState<boolean>(false);
+  const [campoRequerido, setCampoRequerido] = useState<boolean>(false);
 
   const [dados, setDados] = useState({
     nome: { value: "", error: "" },
     n_apartamento: { value: "", error: "" },
     email: { value: "", error: "" },
     senha: { value: "", error: "" },
+    confirmasenha: { value: "", error: "" },
   });
 
   function handleChange(field, text) {
     setDados((state) => ({ ...state, [field]: { value: text, error: "" } }));
   }
 
+  /* VISIBILIDADE SENHA */
+  const [ehVisivel, setEhVisivel] = useState(true);
+  function showPassword() {
+    setEhVisivel(!ehVisivel);
+  }
+
   function paraPasso(passo: string) {
     setPasso(passo);
   }
+
+  const naoVazia = (text) => {
+    const test = text.trim() !== "";
+    !test && setMensagemErro("Campo requerido!");
+    return test;
+  };
+
+  /* **************************  Validação Nome ************************************* */
+  const apenasLetras = (text) => {
+    const test = /^[a-zA-Z\u00C0-\u017F\s]+$/.test(text.trim());
+    dados.nome.error = "Digite apenas letras, maiúsculas ou minúsculas!";
+    !test && setMensagemErro(dados.nome.error);
+    return test;
+  };
+  function validaNome() {
+    let valid = [
+      apenasLetras(dados.nome.value), // ! Apenas letras
+      naoVazia(dados.nome.value), // ! Não permite vazio
+    ].every((e) => e === true);
+
+    valid
+      ? (paraPasso("apto"), setCampoRequerido(false))
+      : setCampoRequerido(true);
+  }
+  /* ******************************************************************************** */
+
+  /****************************  Validação Apto ************************************* */
+  const apenasNumeros = (text) => {
+    const test = /^[0-9]{3,3}/.test(text.trim());
+    dados.n_apartamento.error = "Digite apenas números, no mínimo 3";
+    !test && setMensagemErro(dados.n_apartamento.error);
+    return test;
+  };
+  function validaApto() {
+    let valid = [
+      apenasNumeros(dados.n_apartamento.value), // ! Apenas números
+      naoVazia(dados.n_apartamento.value), // ! Não permite vazio
+    ].every((e) => e === true);
+
+    valid
+      ? (paraPasso("email"), setCampoRequerido(false))
+      : setCampoRequerido(true);
+  }
+  /* ******************************************************************************** */
+
+  /****************************  Validação Email ************************************ */
+  const validaTextoEmail = (text) => {
+    const test = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(text.trim());
+    dados.email.error = "Digite um email válido!";
+    !test && setMensagemErro(dados.email.error);
+    return test;
+  };
+  function validaEmail() {
+    let valid = [
+      validaTextoEmail(dados.email.value), // ! Permite apenas entradas com xxx@xxx.xxx
+      naoVazia(dados.email.value), // ! Não permite vazio
+    ].every((e) => e === true);
+
+    valid
+      ? (paraPasso("senha"), setCampoRequerido(false))
+      : setCampoRequerido(true);
+  }
+  /* ******************************************************************************** */
+
+  /****************************  Validação Senha ************************************ */
+  const validaTextoSenha = (text) => {
+    const test = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})[\S]+$/.test(
+      text.trim()
+    );
+    dados.senha.error =
+      "A senha deve conter, no mínimo:\n\t• Um número.\n\t• Uma letra maiúscula.\n\t• Uma letra minúscula.\n\t• Oito caracteres.";
+    !test && setMensagemErro(dados.senha.error);
+    return test;
+  };
+  const compSenha = (textSenha, textConfSenha) => {
+    if (textSenha.normalize() === textConfSenha.normalize()) return true;
+    else {
+      dados.senha.error = "As senhas devem ser iguais";
+      setMensagemErro(dados.senha.error);
+      return false;
+    }
+  };
+  function validaSenha() {
+    let valid = [
+      validaTextoSenha(dados.senha.value),
+      naoVazia(dados.senha.value), // ! Não permite vazio
+      compSenha(dados.senha.value, dados.confirmasenha.value), // ! verifica se as senhas estão iguais
+    ].every((e) => e === true);
+
+    valid
+      ? (paraPasso("sucesso"), setCampoRequerido(false))
+      : setCampoRequerido(true);
+  }
+  /* ******************************************************************************** */
 
   const renderizaPassos = () => {
     switch (passo) {
@@ -76,18 +183,18 @@ export default function cadastro() {
                 value={dados.nome.value}
                 autoCapitalize="sentences"
               />
-              {error && (
+              {campoRequerido && (
                 <View style={styles.errorContainer}>
                   <AntDesign
                     name="exclamationcircleo"
                     size={18}
                     color={Palette.red}
                   />
-                  <Text style={styles.errorText}>{dados.nome.error}</Text>
+                  <Text style={styles.errorText}>{mensagemErro}</Text>
                 </View>
               )}
               <TouchableNativeFeedback
-                onPress={() => paraPasso("apto")}
+                onPress={() => validaNome()}
                 background={TouchableNativeFeedback.Ripple(
                   (rippleColor = Palette.white),
                   (rippleOverflow = false),
@@ -114,7 +221,7 @@ export default function cadastro() {
                 (rippleOverflow = false),
                 (rippleRadius = 120)
               )}
-              onPress={() => paraPasso("nome")}
+              onPress={() => (paraPasso("nome"), setCampoRequerido(false))}
             >
               <View style={styles.botaoVoltar}>
                 <Ionicons name="chevron-back" size={28} color={Palette.white} />
@@ -141,20 +248,18 @@ export default function cadastro() {
                 maxLength={3}
                 autoCapitalize="none"
               />
-              {error && (
+              {campoRequerido && (
                 <View style={styles.errorContainer}>
                   <AntDesign
                     name="exclamationcircleo"
                     size={18}
                     color={Palette.red}
                   />
-                  <Text style={styles.errorText}>
-                    {dados.n_apartamento.error}
-                  </Text>
+                  <Text style={styles.errorText}>{mensagemErro}</Text>
                 </View>
               )}
               <TouchableNativeFeedback
-                onPress={() => paraPasso("email")}
+                onPress={() => validaApto()}
                 background={TouchableNativeFeedback.Ripple(
                   (rippleColor = Palette.white),
                   (rippleOverflow = false),
@@ -181,7 +286,7 @@ export default function cadastro() {
                 (rippleOverflow = false),
                 (rippleRadius = 120)
               )}
-              onPress={() => paraPasso("apto")}
+              onPress={() => (paraPasso("apto"), setCampoRequerido(false))}
             >
               <View style={styles.botaoVoltar}>
                 <Ionicons name="chevron-back" size={28} color={Palette.white} />
@@ -205,20 +310,18 @@ export default function cadastro() {
                 value={dados.email.value}
                 autoCapitalize="none"
               />
-              {error && (
+              {campoRequerido && (
                 <View style={styles.errorContainer}>
                   <AntDesign
                     name="exclamationcircleo"
                     size={18}
                     color={Palette.red}
                   />
-                  <Text style={styles.errorText}>
-                    {dados.n_apartamento.error}
-                  </Text>
+                  <Text style={styles.errorText}>{mensagemErro}</Text>
                 </View>
               )}
               <TouchableNativeFeedback
-                onPress={() => paraPasso("senha")}
+                onPress={() => validaEmail()}
                 background={TouchableNativeFeedback.Ripple(
                   (rippleColor = Palette.white),
                   (rippleOverflow = false),
@@ -245,7 +348,7 @@ export default function cadastro() {
                 (rippleOverflow = false),
                 (rippleRadius = 120)
               )}
-              onPress={() => paraPasso("email")}
+              onPress={() => (paraPasso("email"), setCampoRequerido(false))}
             >
               <View style={styles.botaoVoltar}>
                 <Ionicons name="chevron-back" size={28} color={Palette.white} />
@@ -258,28 +361,70 @@ export default function cadastro() {
             </View>
             <View style={styles.inputContainer}>
               <TextInput
-                placeholder="Senha"
-                // secureTextEntry={!ehVisivel}
-                placeholderTextColor="rgba(58, 51, 53, 0.5)"
-                style={styles.input}
+                placeholder="Digite uma senha"
+                secureTextEntry={ehVisivel}
                 autoCompleteType="password"
                 textContentType="password"
+                placeholderTextColor="rgba(58, 51, 53, 0.5)"
+                style={styles.input}
                 onChangeText={(e) => handleChange("senha", e)}
                 value={dados.senha.value}
-                autoCapitalize="none"
+                maxLength={20}
               />
-              {error && (
+              <TextInput
+                placeholder="Confirme a senha"
+                secureTextEntry={ehVisivel}
+                autoCompleteType="password"
+                textContentType="password"
+                placeholderTextColor="rgba(58, 51, 53, 0.5)"
+                style={styles.input}
+                onChangeText={(e) => handleChange("confirmasenha", e)}
+                value={dados.confirmasenha.value}
+                maxLength={20}
+              />
+              <View style={styles.inputVisibleContainer}>
+                <TouchableOpacity
+                  onPress={showPassword}
+                  style={styles.inputVisible}
+                >
+                  {ehVisivel ? (
+                    <View style={styles.grid}>
+                      <MaterialCommunityIcons
+                        name="checkbox-blank-outline"
+                        size={24}
+                        color={Palette.black}
+                        style={{ marginRight: 5 }}
+                      />
+                      <Text style={styles.inputVisibleText}>Mostrar senha</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.grid}>
+                      <MaterialCommunityIcons
+                        name="checkbox-marked"
+                        size={24}
+                        color={Palette.green}
+                        style={{ marginRight: 5 }}
+                      />
+                      <Text style={styles.inputVisibleText}>
+                        Esconder senha
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {campoRequerido && (
                 <View style={styles.errorContainer}>
                   <AntDesign
                     name="exclamationcircleo"
                     size={18}
                     color={Palette.red}
                   />
-                  <Text style={styles.errorText}>{dados.senha.error}</Text>
+                  <Text style={styles.errorText}>{mensagemErro}</Text>
                 </View>
               )}
               <TouchableNativeFeedback
-                onPress={() => paraPasso("nome")}
+                onPress={() => validaSenha()}
                 background={TouchableNativeFeedback.Ripple(
                   (rippleColor = Palette.white),
                   (rippleOverflow = false),
@@ -298,9 +443,114 @@ export default function cadastro() {
           </>
         );
       case "sucesso":
-        return <></>;
+        return (
+          <>
+            <TouchableNativeFeedback
+              background={TouchableNativeFeedback.Ripple(
+                (rippleColor = Palette.white),
+                (rippleOverflow = false),
+                (rippleRadius = 120)
+              )}
+              onPress={() => (paraPasso("senha"), setCampoRequerido(false))}
+            >
+              <View style={styles.botaoVoltar}>
+                <Ionicons name="chevron-back" size={28} color={Palette.white} />
+                <Text style={styles.textoBotaoVoltar}>Voltar</Text>
+              </View>
+            </TouchableNativeFeedback>
+            <View style={styles.headerContainer}>
+              <Text
+                style={{
+                  ...styles.textoMaiorHeader,
+                  maxWidth: 300,
+                  textAlign: "center",
+                }}
+              >
+                Cadastro realizado com sucesso!
+              </Text>
+            </View>
+            <View style={styles.inputContainer}>
+              <View style={styles.iconContainer}>
+                <AntDesign
+                  name="checkcircleo"
+                  size={60}
+                  color={Palette.green}
+                />
+              </View>
+              <TouchableNativeFeedback
+                onPress={() => paraPasso("erro")}
+                background={TouchableNativeFeedback.Ripple(
+                  (rippleColor = Palette.white),
+                  (rippleOverflow = false),
+                  (rippleRadius = 160)
+                )}
+              >
+                <View style={styles.botaoProximo}>
+                  {carregando ? (
+                    <ActivityIndicator color={Palette.white} />
+                  ) : (
+                    <Text style={styles.textoBotaoProximo}>
+                      Voltar ao login
+                    </Text>
+                  )}
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+          </>
+        );
       case "erro":
-        return <></>;
+        return (
+          <>
+            <View style={styles.headerContainer}>
+              <Text
+                style={{
+                  ...styles.textoMaiorHeader,
+                  maxWidth: 300,
+                  textAlign: "center",
+                }}
+              >
+                Erro no cadastro!
+              </Text>
+            </View>
+            <View style={styles.inputContainer}>
+              <View style={styles.iconContainer}>
+                <AntDesign name="closecircleo" size={60} color={Palette.red} />
+              </View>
+              <TouchableNativeFeedback
+                onPress={() => paraPasso("nome")}
+                background={TouchableNativeFeedback.Ripple(
+                  (rippleColor = Palette.white),
+                  (rippleOverflow = false),
+                  (rippleRadius = 160)
+                )}
+              >
+                <View style={styles.botaoProximo}>
+                  {carregando ? (
+                    <ActivityIndicator color={Palette.white} />
+                  ) : (
+                    <Text style={styles.textoBotaoProximo}>
+                      Tentar novamente
+                    </Text>
+                  )}
+                </View>
+              </TouchableNativeFeedback>
+              <TouchableNativeFeedback
+                background={TouchableNativeFeedback.Ripple(
+                  (rippleColor = "rgba(58, 51, 53, 0.1)"),
+                  (rippleOverflow = false),
+                  (rippleRadius = 120)
+                )}
+                onPress={() => navigation.navigate("Login")}
+              >
+                <View style={styles.touchableVoltarLogin}>
+                  <Text style={styles.buttonTextVoltarLogin}>
+                    Voltar para o login
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+          </>
+        );
       default:
         return (
           <View>
@@ -383,6 +633,34 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.lato_regular,
   },
 
+  /* Checkbox Senha */
+  inputVisibleContainer: {
+    display: "flex",
+    flexDirection: "row",
+    height: 50,
+    marginBottom: 5,
+    fontSize: 16,
+    fontFamily: Fonts.lato_regular,
+    fontStyle: "normal",
+    alignItems: "center",
+  },
+  inputVisible: {
+    maxWidth: 600,
+  },
+  inputVisibleText: {
+    fontSize: 14,
+    fontFamily: Fonts.lato_regular,
+    fontStyle: "normal",
+    textAlign: "right",
+    textTransform: "uppercase",
+    color: Palette.black,
+  },
+  grid: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+  },
+
   /* ERROR */
   errorContainer: {
     flexDirection: "row",
@@ -411,5 +689,26 @@ const styles = StyleSheet.create({
     backgroundColor: Palette.green,
     borderRadius: 15,
     justifyContent: "center",
+  },
+
+  iconContainer: {
+    width: screenWidth,
+    height: screenHeight / 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  touchableVoltarLogin: {
+    width: screenWidth - 50,
+    height: 65,
+    marginTop: 4,
+    borderRadius: 15,
+    justifyContent: "center",
+  },
+  buttonTextVoltarLogin: {
+    fontFamily: Fonts.roboto_bold,
+    fontSize: 18,
+    color: Palette.green,
+    alignSelf: "center",
   },
 });
