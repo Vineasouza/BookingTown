@@ -2,11 +2,15 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import AppLoading from "expo-app-loading";
-import { StyleSheet, Text, View, SafeAreaView } from "react-native";
+import { StyleSheet, SafeAreaView } from "react-native";
 import { useFonts } from "expo-font";
+import { Provider } from "react-redux";
+import { createStore } from "redux";
 
-import fonts from "./src/styles/fonts";
-import palette from "./src/styles/palette";
+import { Fonts, Palette } from "./src/styles/";
+import rootReducer from "./src/reducers";
+
+const store = createStore(rootReducer);
 
 import {
   Roboto_100Thin,
@@ -37,6 +41,7 @@ import {
 } from "@expo-google-fonts/lato";
 
 import { FugazOne_400Regular } from "@expo-google-fonts/fugaz-one";
+import Routes from "./src/routes";
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -77,18 +82,9 @@ export default function App() {
       <NavigationContainer>
         <SafeAreaView style={{ flex: 1 }}>
           <StatusBar style="auto" />
-          <View style={styles.container}>
-            <Text
-              style={{
-                fontSize,
-                paddingVertical,
-                fontFamily: fonts.fugaz,
-                color: palette.green,
-              }}
-            >
-              BookingTown
-            </Text>
-          </View>
+          <Provider store={store}>
+            <Routes />
+          </Provider>
         </SafeAreaView>
       </NavigationContainer>
     );
@@ -98,7 +94,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: palette.white,
+    backgroundColor: Palette.white,
     alignItems: "center",
     justifyContent: "center",
   },
