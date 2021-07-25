@@ -7,7 +7,7 @@ import TabRoutes from "./tab.routes";
 
 const Routes: React.FC = () => {
   //   const { signed, loading } = useAuth();
-  const [signed, setSigned] = useState(false);
+  const [signed, setSigned] = useState(true);
   const [loading, setLoading] = useState(false);
 
   if (loading) {

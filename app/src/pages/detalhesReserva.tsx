@@ -1,0 +1,258 @@
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  ActivityIndicator,
+  ScrollView,
+  TouchableNativeFeedback,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { AntDesign } from "@expo/vector-icons";
+
+import Circles from "../components/styles/circles2";
+import { Palette, Fonts } from "../styles/";
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+export default function detalhesReserva({ route }) {
+  let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
+  const navigation = useNavigation();
+  const [carregando, setCarregando] = useState(true);
+  const [dados, setDados] = useState({
+    id: "" as string,
+    ambiente: "" as string,
+    descricao: "" as string,
+    dataReserva: "" as string,
+    lotacao: 0 as number,
+    status: "" as string,
+  });
+
+  const lorem =
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Praesent bibendum ipsum sit amet mollis cursus. Nullam mauris purus, commodo efficitur maximus nec, placerat ac ante. Praesent justo eros, consequat ut ligula at, convallis faucibus orci.";
+
+  useEffect(() => {
+    setDados({
+      id: route.params.item.id,
+      ambiente: route.params.item.ambiente,
+      descricao: lorem,
+      lotacao: 10,
+      dataReserva: route.params.item.dataReserva,
+      status: route.params.item.status,
+    });
+  }, []);
+
+  setTimeout(() => {
+    setCarregando(false);
+  }, 1000);
+
+  function Status(status: string) {
+    if (status === "Reservado") {
+      return (
+        <View
+          style={{ ...styles.status, backgroundColor: Palette.green }}
+        ></View>
+      );
+    } else if (status === "Pendente") {
+      return (
+        <View
+          style={{ ...styles.status, backgroundColor: Palette.orange }}
+        ></View>
+      );
+    } else if (status === "Cancelado") {
+      return (
+        <View style={{ ...styles.status, backgroundColor: Palette.red }}></View>
+      );
+    } else if (status === "Concluído") {
+      return (
+        <View
+          style={{ ...styles.status, backgroundColor: Palette.black }}
+        ></View>
+      );
+    } else {
+      return (
+        <AntDesign
+          name="warning"
+          size={10}
+          color={Palette.red}
+          style={styles.status}
+        />
+      );
+    }
+  }
+
+  function cancelarAtivo(status: string) {
+    {
+      if (status === "Concluído" || status === "Cancelado") {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <Circles />
+      <View style={styles.headerContainer}>
+        <Text style={styles.textoHeader}>{"Reserva " + dados.ambiente}</Text>
+      </View>
+      {carregando ? (
+        <ActivityIndicator
+          size={36}
+          color={Palette.green}
+          style={{ ...styles.conteudoContainer, height: screenHeight / 2 }}
+        />
+      ) : (
+        <ScrollView style={styles.conteudoContainer}>
+          <View style={styles.conteudo}>
+            <Text style={styles.textoConteudoPrincipal}>Ambiente: </Text>
+            <Text style={styles.textoConteudo}>{dados.ambiente}</Text>
+          </View>
+          <View style={styles.conteudo}>
+            <Text style={styles.textoConteudoPrincipal}>Descrição: </Text>
+            <Text style={styles.textoConteudo}>{dados.descricao}</Text>
+          </View>
+          <View style={styles.conteudo}>
+            <Text style={styles.textoConteudoPrincipal}>Lotação Máxima: </Text>
+            <Text style={styles.textoConteudo}>{dados.lotacao + " "}</Text>
+            <Text style={styles.textoConteudo}>Pessoas</Text>
+          </View>
+          <View style={styles.conteudo}>
+            <Text style={styles.textoConteudoPrincipal}>Dia da reserva: </Text>
+            <Text style={styles.textoConteudo}>{dados.dataReserva}</Text>
+          </View>
+          <View style={styles.conteudo}>
+            <Text style={styles.textoConteudoPrincipal}>Status: </Text>
+            <Text style={styles.textoConteudo}>{dados.status}</Text>
+            {Status(dados.status)}
+          </View>
+          <View style={{ ...styles.conteudo, marginTop: 15 }}>
+            <TouchableNativeFeedback
+              onPress={() => navigation.goBack()}
+              background={TouchableNativeFeedback.Ripple(
+                (rippleColor = Palette.white),
+                (rippleOverflow = false),
+                (rippleRadius = 120)
+              )}
+            >
+              <View style={styles.touchableVoltar}>
+                <Text style={styles.botaoTextoVoltar}>
+                  Voltar para as reservas
+                </Text>
+              </View>
+            </TouchableNativeFeedback>
+          </View>
+          {!cancelarAtivo(dados.status) && (
+            <View style={{ ...styles.conteudo, marginTop: 0 }}>
+              <TouchableNativeFeedback
+                onPress={() => navigation.goBack()}
+                background={TouchableNativeFeedback.Ripple(
+                  (rippleColor = "rgba(58, 51, 53, 0.1)"),
+                  (rippleOverflow = false),
+                  (rippleRadius = 60)
+                )}
+              >
+                <View style={styles.touchableCancelar}>
+                  <Text style={styles.botaoTextoCancelar}>
+                    Cancelar reserva
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+          )}
+        </ScrollView>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Palette.white,
+  },
+
+  /* HEADER */
+  headerContainer: {
+    width: screenWidth,
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
+    marginTop: 5,
+  },
+  textoHeader: {
+    fontFamily: Fonts.lato_bold,
+    fontSize: 28,
+    color: Palette.green,
+    flexWrap: "wrap",
+  },
+
+  /* CONTEUDO */
+  conteudoContainer: {
+    width: screenWidth,
+    height: screenHeight / 4,
+    paddingVertical: 30,
+    textAlign: "center",
+  },
+  conteudo: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flexWrap: "wrap",
+    width: screenWidth - 100,
+    marginVertical: 10,
+    alignSelf: "center",
+  },
+  textoConteudoPrincipal: {
+    fontFamily: Fonts.lato_bold,
+    fontSize: 18,
+    color: Palette.black,
+    textAlign: "center",
+  },
+  textoConteudo: {
+    fontFamily: Fonts.lato_regular,
+    fontSize: 18,
+    color: Palette.black,
+    textAlign: "center",
+  },
+
+  /* Status component */
+  status: {
+    width: 12,
+    height: 12,
+    marginLeft: 10,
+    borderRadius: 10,
+  },
+
+  /* Botao Voltar */
+  touchableVoltar: {
+    backgroundColor: Palette.green,
+    justifyContent: "center",
+    alignItems: "center",
+    width: screenWidth - 100,
+    height: 55,
+    borderRadius: 10,
+  },
+  botaoTextoVoltar: {
+    fontFamily: Fonts.lato_bold,
+    fontSize: 22,
+    color: Palette.white,
+  },
+
+  /* Botao Cancelar */
+  touchableCancelar: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: screenWidth - 100,
+    height: 40,
+  },
+  botaoTextoCancelar: {
+    fontFamily: Fonts.lato_bold,
+    fontSize: 18,
+    color: Palette.red,
+  },
+});
