@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   ScrollView,
   TouchableNativeFeedback,
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
@@ -20,6 +21,8 @@ export default function detalhesReserva({ route }) {
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
   const [carregando, setCarregando] = useState(true);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [carregandoBotao, setCarregandoBotao] = useState(false);
   const [dados, setDados] = useState({
     id: "" as string,
     ambiente: "" as string,
@@ -46,6 +49,15 @@ export default function detalhesReserva({ route }) {
   setTimeout(() => {
     setCarregando(false);
   }, 1000);
+
+  function navegar() {
+    setCarregandoBotao(true);
+    setTimeout(() => {
+      navigation.navigate("ReservaCancelada");
+      setMostrarModal(false);
+      setCarregandoBotao(false);
+    }, 1500);
+  }
 
   function Status(status: string) {
     if (status === "Reservado") {
@@ -95,6 +107,52 @@ export default function detalhesReserva({ route }) {
   return (
     <View style={styles.container}>
       <Circles />
+      <Modal animationType="fade" transparent={true} visible={mostrarModal}>
+        <View style={styles.modalContainer}>
+          <View style={styles.conteudoModalContainer}>
+            <Text style={{ ...styles.textoModal, fontSize: 20 }}>
+              Deseja cancelar a reserva?
+            </Text>
+            <View style={styles.botaoModalContainer}>
+              <TouchableNativeFeedback
+                onPress={() => setMostrarModal(false)}
+                background={TouchableNativeFeedback.Ripple(
+                  (rippleColor = "rgba(58, 51, 53, 0.1)"),
+                  (rippleOverflow = true),
+                  (rippleRadius = 40)
+                )}
+              >
+                <View style={styles.botaoNaoModal}>
+                  <Text style={styles.textoModal}>Não</Text>
+                </View>
+              </TouchableNativeFeedback>
+              <TouchableNativeFeedback
+                onPress={() => navegar()}
+                background={TouchableNativeFeedback.Ripple(
+                  (rippleColor = "rgba(235, 87, 87, 0.1)"),
+                  (rippleOverflow = true),
+                  (rippleRadius = 40)
+                )}
+              >
+                <View style={styles.botaoSimModal}>
+                  {carregandoBotao ? (
+                    <ActivityIndicator color={Palette.red} size={15} />
+                  ) : (
+                    <Text
+                      style={{
+                        ...styles.textoModal,
+                        color: Palette.red,
+                      }}
+                    >
+                      Sim
+                    </Text>
+                  )}
+                </View>
+              </TouchableNativeFeedback>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.headerContainer}>
         <Text style={styles.textoHeader}>{"Reserva " + dados.ambiente}</Text>
       </View>
@@ -147,10 +205,10 @@ export default function detalhesReserva({ route }) {
           {!cancelarAtivo(dados.status) && (
             <View style={{ ...styles.conteudo, marginTop: 0 }}>
               <TouchableNativeFeedback
-                onPress={() => navigation.goBack()}
+                onPress={() => setMostrarModal(true)}
                 background={TouchableNativeFeedback.Ripple(
-                  (rippleColor = "rgba(58, 51, 53, 0.1)"),
-                  (rippleOverflow = false),
+                  (rippleColor = "rgba(235, 87, 87, 0.1)"),
+                  (rippleOverflow = true),
                   (rippleRadius = 60)
                 )}
               >
@@ -254,5 +312,51 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.lato_bold,
     fontSize: 18,
     color: Palette.red,
+  },
+
+  /* Modal */
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.65)",
+  },
+
+  conteudoModalContainer: {
+    width: screenWidth - 100,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Palette.white,
+    borderRadius: 10,
+    padding: 30,
+  },
+  textoModal: {
+    fontFamily: Fonts.lato_bold,
+    fontSize: 18,
+  },
+
+  botaoModalContainer: {
+    width: screenWidth - 200,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  botaoSimModal: {
+    justifyContent: "center",
+    alignItems: "center",
+    margin: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: Palette.red,
+  },
+  botaoNaoModal: {
+    justifyContent: "center",
+    alignItems: "center",
+    margin: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
 });

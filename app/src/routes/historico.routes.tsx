@@ -2,7 +2,7 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import { Historico, DetalhesReserva } from "../pages";
+import { Historico, DetalhesReserva, ReservaCancelada } from "../pages";
 
 const HistoricoStack = createStackNavigator();
 
@@ -19,6 +19,11 @@ const HistoricoRoutes: React.FC = () => {
         <HistoricoStack.Screen
           name="DetalhesReserva"
           component={DetalhesReserva}
+          options={{ headerShown: false }}
+        />
+        <HistoricoStack.Screen
+          name="ReservaCancelada"
+          component={ReservaCancelada}
           options={{ headerShown: false }}
         />
       </HistoricoStack.Navigator>
