@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 
 import Circles from "../components/styles/circles2";
-import { Palette, Fonts } from "../styles/";
+import { Palette, Fonts } from "../styles";
 import moment from "moment";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -133,7 +133,7 @@ const Item = ({ item, onPress }) => (
   </TouchableOpacity>
 );
 
-export default function historico() {
+export default function reservas() {
   const navigation = useNavigation();
   const [selectedId, setSelectedId] = useState(null);
   const [carregando, setCarregando] = useState(true);

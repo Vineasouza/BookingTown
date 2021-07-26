@@ -4,16 +4,13 @@ import { StatusBar } from "expo-status-bar";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign } from "@expo/vector-icons";
 
-import { Fonts, Palette } from "../styles/";
-import { Home } from "../pages";
-import HomeRoutes from "../routes/home.routes";
-import HistoricoRoutes from "../routes/historico.routes";
-import ProfileRoutes from "../routes/profile.routes";
+import { Fonts, Palette } from "../styles";
+import { AdminHome, AdminHistorico, AdminProfile } from "../pages";
 
 // https://reactnavigation.org/docs/bottom-tab-navigator
 const TabStack = createBottomTabNavigator();
 
-const AppRoutes: React.FC = () => {
+const AdminRoutes: React.FC = () => {
   return (
     <>
       <StatusBar />
@@ -47,14 +44,12 @@ const AppRoutes: React.FC = () => {
           },
         }}
       >
-        <TabStack.Screen name="Histórico" component={HistoricoRoutes} />
-        <TabStack.Screen name="Home" component={HomeRoutes} />
-        <TabStack.Screen name="Profile" component={ProfileRoutes} />
+        <TabStack.Screen name="Histórico" component={AdminHistorico} />
+        <TabStack.Screen name="Home" component={AdminHome} />
+        <TabStack.Screen name="Profile" component={AdminProfile} />
       </TabStack.Navigator>
     </>
   );
 };
 
-export default AppRoutes;
-
-const styles = StyleSheet.create({});
+export default AdminRoutes;

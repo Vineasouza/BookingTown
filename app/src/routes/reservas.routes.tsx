@@ -2,33 +2,33 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import { Historico, DetalhesReserva, ReservaCancelada } from "../pages";
+import { Reservas, DetalhesReserva, ReservaCancelada } from "../pages";
 
-const HistoricoStack = createStackNavigator();
+const ReservasStack = createStackNavigator();
 
-const HistoricoRoutes: React.FC = () => {
+const ReservasRoutes: React.FC = () => {
   return (
     <>
       <StatusBar />
-      <HistoricoStack.Navigator>
-        <HistoricoStack.Screen
-          name="Historico"
-          component={Historico}
+      <ReservasStack.Navigator>
+        <ReservasStack.Screen
+          name="Reservas"
+          component={Reservas}
           options={{ headerShown: false }}
         />
-        <HistoricoStack.Screen
+        <ReservasStack.Screen
           name="DetalhesReserva"
           component={DetalhesReserva}
           options={{ headerShown: false }}
         />
-        <HistoricoStack.Screen
+        <ReservasStack.Screen
           name="ReservaCancelada"
           component={ReservaCancelada}
           options={{ headerShown: false }}
         />
-      </HistoricoStack.Navigator>
+      </ReservasStack.Navigator>
     </>
   );
 };
 
-export default HistoricoRoutes;
+export default ReservasRoutes;

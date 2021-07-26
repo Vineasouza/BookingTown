@@ -3,10 +3,10 @@ import { View, ActivityIndicator } from "react-native";
 import { Fonts, Palette } from "../styles";
 
 import AuthRoutes from "./auth.routes";
-import TabRoutes from "./tab.routes";
+import AdminRoutes from "./admin.routes";
+import UserRoutes from "./user.routes";
 
 const Routes: React.FC = () => {
-  //   const { signed, loading } = useAuth();
   const [signed, setSigned] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +25,7 @@ const Routes: React.FC = () => {
     );
   }
 
-  return signed ? <TabRoutes /> : <AuthRoutes />;
+  return signed ? <AdminRoutes /> : <AuthRoutes />;
 };
 
 export default Routes;
