@@ -6,6 +6,7 @@ import { AntDesign } from "@expo/vector-icons";
 
 import { Fonts, Palette } from "../styles";
 import { AdminHome, AdminHistorico, AdminProfile } from "../pages";
+import AdminHomeRoutes from "./adminHome.routes";
 
 // https://reactnavigation.org/docs/bottom-tab-navigator
 const TabStack = createBottomTabNavigator();
@@ -45,7 +46,7 @@ const AdminRoutes: React.FC = () => {
         }}
       >
         <TabStack.Screen name="Histórico" component={AdminHistorico} />
-        <TabStack.Screen name="Home" component={AdminHome} />
+        <TabStack.Screen name="Home" component={AdminHomeRoutes} />
         <TabStack.Screen name="Profile" component={AdminProfile} />
       </TabStack.Navigator>
     </>

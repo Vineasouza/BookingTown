@@ -15,3 +15,4 @@ export { default as DetalhesReserva } from "./detalhesReserva";
 export { default as AdminHome } from "./admin/home";
 export { default as AdminHistorico } from "./admin/historico";
 export { default as AdminProfile } from "./admin/profile";
+export { default as AdminAprovacaoReserva } from "./admin/aprovacaoReserva";
