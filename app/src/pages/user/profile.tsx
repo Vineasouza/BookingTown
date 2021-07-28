@@ -9,8 +9,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import Circles from "../components/styles/circles2";
-import { Palette, Fonts } from "../styles/";
+import Circles from "../../components/styles/circles2";
+import { Palette, Fonts } from "../../styles";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 

@@ -2,7 +2,12 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import { AdminHome, AdminAprovacaoReserva } from "../pages";
+import {
+  AdminHome,
+  AdminAprovacaoReserva,
+  AdminReservaCancelada,
+  AdminReservaConfirmada,
+} from "../pages";
 
 const AdminHomeStack = createStackNavigator();
 
@@ -19,6 +24,16 @@ const AdminHomeRoutes: React.FC = () => {
         <AdminHomeStack.Screen
           name="AdminAprovacaoReserva"
           component={AdminAprovacaoReserva}
+          options={{ headerShown: false }}
+        />
+        <AdminHomeStack.Screen
+          name="AdminReservaCancelada"
+          component={AdminReservaCancelada}
+          options={{ headerShown: false }}
+        />
+        <AdminHomeStack.Screen
+          name="AdminReservaConfirmada"
+          component={AdminReservaConfirmada}
           options={{ headerShown: false }}
         />
       </AdminHomeStack.Navigator>

@@ -10,8 +10,8 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 
-import Circles from "../components/styles/circles";
-import { Palette, Fonts } from "../styles";
+import Circles from "../../components/styles/circles";
+import { Palette, Fonts } from "../../styles";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 

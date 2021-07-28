@@ -12,8 +12,8 @@ import {
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-import Circles from "../components/styles/circles2";
-import { Palette, Fonts } from "../styles/";
+import Circles from "../../components/styles/circles2";
+import { Palette, Fonts } from "../../styles";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 

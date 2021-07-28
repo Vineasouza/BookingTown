@@ -12,9 +12,9 @@ import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import "moment/locale/pt-br";
 
-import Circles from "../components/styles/circles2";
-import { Palette, Fonts } from "../styles/";
-import Date from "../components/Date";
+import Circles from "../../components/styles/circles2";
+import { Palette, Fonts } from "../../styles";
+import Date from "../../components/Date";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 

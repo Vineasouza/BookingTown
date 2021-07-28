@@ -18,7 +18,7 @@ import { Palette, Fonts } from "../../styles/";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-export default function detalhesReserva({ route }) {
+export default function aprovacaoReserva({ route }) {
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
   const [carregando, setCarregando] = useState(true);
@@ -29,6 +29,7 @@ export default function detalhesReserva({ route }) {
     ambiente: "" as string,
     descricao: "" as string,
     solicitante: "" as string,
+    nApartamento: 0 as number,
     dataReserva: "" as string,
     lotacao: 0 as number,
     status: "" as string,
@@ -42,6 +43,7 @@ export default function detalhesReserva({ route }) {
       ambiente: route.params.item.ambiente,
       descricao: lorem,
       solicitante: route.params.item.solicitante,
+      nApartamento: route.params.item.nApartamento,
       lotacao: 10,
       dataReserva: route.params.item.dataReserva,
       status: route.params.item.status,
@@ -52,10 +54,10 @@ export default function detalhesReserva({ route }) {
     setCarregando(false);
   }, 1000);
 
-  function navegar() {
+  function navegar(route: string) {
     setCarregandoBotao(true);
     setTimeout(() => {
-      navigation.navigate("ReservaCancelada");
+      navigation.navigate(route);
       setMostrarModal(false);
       setCarregandoBotao(false);
     }, 1500);
@@ -96,9 +98,9 @@ export default function detalhesReserva({ route }) {
     }
   }
 
-  function cancelarAtivo(status: string) {
+  function tipoStatus(status: string) {
     {
-      if (status === "Concluído" || status === "Cancelado") {
+      if (status === "Pendente") {
         return true;
       } else {
         return false;
@@ -129,7 +131,7 @@ export default function detalhesReserva({ route }) {
                 </View>
               </TouchableNativeFeedback>
               <TouchableNativeFeedback
-                onPress={() => navegar()}
+                onPress={() => navegar("AdminReservaCancelada")}
                 background={TouchableNativeFeedback.Ripple(
                   (rippleColor = "rgba(235, 87, 87, 0.1)"),
                   (rippleOverflow = true),
@@ -178,6 +180,8 @@ export default function detalhesReserva({ route }) {
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Solicitante: </Text>
               <Text style={styles.textoConteudo}>{dados.solicitante}</Text>
+              <Text style={styles.textoConteudoPrincipal}>{"\t"}Apt: </Text>
+              <Text style={styles.textoConteudo}>{dados.nApartamento}</Text>
             </View>
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>
@@ -197,38 +201,45 @@ export default function detalhesReserva({ route }) {
               <Text style={styles.textoConteudo}>{dados.status}</Text>
               {Status(dados.status)}
             </View>
-            <View style={{ ...styles.conteudo, marginTop: 15 }}>
-              <TouchableNativeFeedback
-                onPress={() => navigation.goBack()}
-                background={TouchableNativeFeedback.Ripple(
-                  (rippleColor = Palette.white),
-                  (rippleOverflow = false),
-                  (rippleRadius = 120)
-                )}
-              >
-                <View style={styles.touchableVoltar}>
-                  <Text style={styles.botaoTextoVoltar}>Confirmar reserva</Text>
-                </View>
-              </TouchableNativeFeedback>
-            </View>
-            {!cancelarAtivo(dados.status) && (
-              <View style={{ ...styles.conteudo, marginTop: 0 }}>
+            {tipoStatus(dados.status) && (
+              <View style={{ ...styles.conteudo, marginTop: 15 }}>
                 <TouchableNativeFeedback
-                  onPress={() => setMostrarModal(true)}
+                  onPress={() => navegar("AdminReservaConfirmada")}
                   background={TouchableNativeFeedback.Ripple(
-                    (rippleColor = "rgba(235, 87, 87, 0.1)"),
-                    (rippleOverflow = true),
-                    (rippleRadius = 60)
+                    (rippleColor = Palette.white),
+                    (rippleOverflow = false),
+                    (rippleRadius = 120)
                   )}
                 >
-                  <View style={styles.touchableCancelar}>
-                    <Text style={styles.botaoTextoCancelar}>
-                      Cancelar reserva
-                    </Text>
+                  <View style={styles.touchableVoltar}>
+                    {carregandoBotao ? (
+                      <ActivityIndicator color={Palette.white} size={24} />
+                    ) : (
+                      <Text style={styles.botaoTextoVoltar}>
+                        Confirmar reserva
+                      </Text>
+                    )}
                   </View>
                 </TouchableNativeFeedback>
               </View>
             )}
+
+            <View style={{ ...styles.conteudo, marginTop: 0 }}>
+              <TouchableNativeFeedback
+                onPress={() => setMostrarModal(true)}
+                background={TouchableNativeFeedback.Ripple(
+                  (rippleColor = "rgba(235, 87, 87, 0.1)"),
+                  (rippleOverflow = true),
+                  (rippleRadius = 60)
+                )}
+              >
+                <View style={styles.touchableCancelar}>
+                  <Text style={styles.botaoTextoCancelar}>
+                    Cancelar reserva
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
+            </View>
           </ScrollView>
         </SafeAreaView>
       )}
@@ -317,6 +328,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: screenWidth - 100,
     height: 40,
+    marginTop: 15,
   },
   botaoTextoCancelar: {
     fontFamily: Fonts.lato_bold,

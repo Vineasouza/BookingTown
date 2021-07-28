@@ -10,12 +10,12 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 
-import Circles from "../components/styles/circles";
-import { Palette, Fonts } from "../styles/";
+import Circles from "../../components/styles/circles";
+import { Palette, Fonts } from "../../styles";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-export default function reservaRealizada() {
+export default function reservaCancelada() {
   const navigation = useNavigation();
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
 
@@ -30,15 +30,15 @@ export default function reservaRealizada() {
             textAlign: "center",
           }}
         >
-          Reserva realizada! {"\n"}Aguardar confirmação
+          Reserva Cancelada!
         </Text>
       </View>
       <View style={styles.conteudoContainer}>
         <View style={styles.iconContainer}>
-          <AntDesign name="checkcircleo" size={60} color={Palette.green} />
+          <AntDesign name="closecircleo" size={60} color={Palette.red} />
         </View>
         <TouchableNativeFeedback
-          onPress={() => navigation.navigate("Home")}
+          onPress={() => navigation.navigate("AdminHome")}
           background={TouchableNativeFeedback.Ripple(
             (rippleColor = "rgba(58, 51, 53, 0.1)"),
             (rippleOverflow = false),

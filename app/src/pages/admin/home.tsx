@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  TouchableNativeFeedback,
   Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -18,56 +17,76 @@ import { FAB, Portal, Provider } from "react-native-paper";
 
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles/";
+import { ScrollView } from "react-native-gesture-handler";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+const STATUS_RESERVADO = "Reservado";
+const STATUS_PENDENTE = "Pendente";
+const STATUS_CANCELADO = "Cancelado";
+const STATUS_CONCLUIDO = "Concluído";
+const FILTRO_STATUS = "status";
+const FILTRO_HOJE = "hoje";
+const FILTRO_AMANHA = "amanha";
+const FILTRO_DEFAULT = "default";
+const DATA_HOJE = moment().format("DD" + "/MM" + "/YYYY");
+const DATA_AMANHA = moment()
+  .add("1", "day")
+  .format("DD" + "/MM" + "/YYYY");
 
 const DATA = [
   {
     id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
     ambiente: "Churrasqueira",
     solicitante: "Jorginho",
+    nApartamento: 121,
     dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: "Reservado",
+    status: STATUS_RESERVADO,
   },
   {
     id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
     ambiente: "Salão de festas",
     solicitante: "Alberto",
+    nApartamento: 122,
     dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: "Pendente",
+    status: STATUS_PENDENTE,
   },
   {
     id: "58694a0f-3da1-471f-bd96-145571e29d72",
     ambiente: "Salão Gourmet",
     solicitante: "Roberta",
+    nApartamento: 123,
     dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: "Cancelado",
+    status: STATUS_PENDENTE,
   },
   {
     id: "58694a0f-3da1-471f-bd96-145571e29d724",
     ambiente: "Churrasqueira",
     solicitante: "Rafaela",
-    dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: "Concluído",
+    nApartamento: 124,
+    dataReserva: moment()
+      .add("1", "day")
+      .format("DD" + "/MM" + "/YYYY"),
+    status: STATUS_PENDENTE,
   },
 ];
 
 function Status(status: string) {
-  if (status === "Reservado") {
+  if (status === STATUS_RESERVADO) {
     return (
       <View style={{ ...styles.status, backgroundColor: Palette.green }}></View>
     );
-  } else if (status === "Pendente") {
+  } else if (status === STATUS_PENDENTE) {
     return (
       <View
         style={{ ...styles.status, backgroundColor: Palette.orange }}
       ></View>
     );
-  } else if (status === "Cancelado") {
+  } else if (status === STATUS_CANCELADO) {
     return (
       <View style={{ ...styles.status, backgroundColor: Palette.red }}></View>
     );
-  } else if (status === "Concluído") {
+  } else if (status === STATUS_CONCLUIDO) {
     return (
       <View style={{ ...styles.status, backgroundColor: Palette.black }}></View>
     );
@@ -85,7 +104,7 @@ function Status(status: string) {
 
 function cardAtivo(status: string) {
   {
-    if (status === "Concluído") {
+    if (status === STATUS_CONCLUIDO) {
       return true;
     } else {
       return false;
@@ -119,6 +138,10 @@ const Item = ({ item, onPress }) => (
             Solicitante:{" "}
           </Text>
           <Text style={{ ...styles.title }}>{item.solicitante}</Text>
+          <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
+            {"\t"}Apt:{" "}
+          </Text>
+          <Text style={{ ...styles.title }}>{item.nApartamento}</Text>
         </View>
         <View style={styles.conteudoItem}>
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
@@ -152,8 +175,10 @@ export default function home() {
   const [selectedId, setSelectedId] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [mostrarModalFiltros, setMostrarModalFiltros] = useState(false);
-  const [mostraOpcoes, setMostraOpcoes] = useState(true);
-  const [filtro, setFiltro] = useState("");
+  const [filtro, setFiltro] = useState({
+    type: FILTRO_DEFAULT,
+    value: "",
+  });
 
   const renderItem = ({ item }) => {
     return (
@@ -165,6 +190,43 @@ export default function home() {
       />
     );
   };
+
+  function filtroRetornDados(type: string, value: string) {
+    const dadosFiltrados: any[] = [];
+    if (type === FILTRO_STATUS) {
+      DATA.map(function (item) {
+        if (item.status === value) {
+          dadosFiltrados.push(item);
+        }
+      });
+    } else if (type === FILTRO_HOJE) {
+      DATA.map(function (item) {
+        if (item.dataReserva === value) {
+          dadosFiltrados.push(item);
+        }
+      });
+    } else if (type === FILTRO_AMANHA) {
+      DATA.map(function (item) {
+        if (item.dataReserva === value) {
+          dadosFiltrados.push(item);
+        }
+      });
+    } else if (type === FILTRO_DEFAULT) {
+      DATA.map(function (item) {
+        dadosFiltrados.push(item);
+      });
+    }
+    return dadosFiltrados;
+  }
+
+  function defineFiltro(type: string, value: string, modal: boolean) {
+    if (modal) {
+      setFiltro({ type: type, value: value });
+      setMostrarModalFiltros(false);
+    } else {
+      setFiltro({ type: type, value: value });
+    }
+  }
 
   setTimeout(() => {
     setCarregando(false);
@@ -186,23 +248,27 @@ export default function home() {
             >
               <AntDesign name="close" size={24} color={Palette.black} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.botaoModal}>
+            <TouchableOpacity
+              style={styles.botaoModal}
+              key={0}
+              onPress={() =>
+                defineFiltro(FILTRO_STATUS, STATUS_RESERVADO, true)
+              }
+            >
               <View
                 style={{ ...styles.status, backgroundColor: Palette.green }}
               ></View>
-              <Text style={styles.textoBotaoModal}>Pendente</Text>
+              <Text style={styles.textoBotaoModal}>Reservado</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.botaoModal}>
+            <TouchableOpacity
+              style={styles.botaoModal}
+              key={1}
+              onPress={() => defineFiltro(FILTRO_STATUS, STATUS_PENDENTE, true)}
+            >
               <View
                 style={{ ...styles.status, backgroundColor: Palette.orange }}
               ></View>
-              <Text style={styles.textoBotaoModal}>Reservado</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.botaoModal}>
-              <View
-                style={{ ...styles.status, backgroundColor: Palette.red }}
-              ></View>
-              <Text style={styles.textoBotaoModal}>Cancelado</Text>
+              <Text style={styles.textoBotaoModal}>Pendente</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -218,27 +284,45 @@ export default function home() {
 
       <View style={styles.headerContainer}>
         <Text style={styles.textoHeader}>Solicitações de Reserva</Text>
-        <View style={styles.filtroContainer}>
-          <TouchableOpacity
-            style={styles.botaoFiltro}
-            onPress={() => setMostrarModalFiltros(true)}
-          >
-            <Text>Status</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.botaoFiltro}>
-            <Text>Hoje</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.botaoFiltro}>
-            <Text>Amanhã</Text>
-          </TouchableOpacity>
-        </View>
+        <ScrollView
+          style={styles.scrollContainer}
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+        >
+          <View style={styles.filtroContainer}>
+            <TouchableOpacity
+              style={styles.botaoFiltro}
+              onPress={() => setMostrarModalFiltros(true)}
+            >
+              <Text style={styles.textoBotaoFiltro}>Status</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.botaoFiltro}
+              onPress={() => defineFiltro(FILTRO_HOJE, DATA_HOJE, false)}
+            >
+              <Text style={styles.textoBotaoFiltro}>Hoje</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.botaoFiltro}
+              onPress={() => defineFiltro(FILTRO_AMANHA, DATA_AMANHA, false)}
+            >
+              <Text style={styles.textoBotaoFiltro}>Amanhã</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.botaoFiltro}
+              onPress={() => defineFiltro(FILTRO_DEFAULT, "", false)}
+            >
+              <Text style={styles.textoBotaoFiltro}>Limpar</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
       <SafeAreaView style={styles.flatlistContainer}>
         {carregando ? (
           <ActivityIndicator size={36} color={Palette.green} />
         ) : (
           <FlatList
-            data={DATA}
+            data={filtroRetornDados(filtro.type, filtro.value)}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             extraData={selectedId}
@@ -286,19 +370,31 @@ const styles = StyleSheet.create({
   },
 
   /* FILTRO */
+  scrollContainer: {
+    width: screenWidth - 50,
+  },
   filtroContainer: {
     flexDirection: "row",
-    marginVertical: 10,
+    justifyContent: "center",
   },
   botaoFiltro: {
     justifyContent: "center",
     alignItems: "center",
-    width: 90,
+    width: 80,
     height: 30,
     marginHorizontal: 5,
     borderWidth: 1,
     borderRadius: 10,
     borderColor: "rgba(58, 51, 53, 0.5)",
+  },
+  textoBotaoFiltro: {
+    fontFamily: Fonts.lato_bold,
+    fontSize: 16,
+    color: "rgba(58, 51, 53, 0.7)",
+  },
+  botaoFiltroSelecionado: {
+    backgroundColor: Palette.green,
+    color: Palette.white,
   },
 
   /* Item */
