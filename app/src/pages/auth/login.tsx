@@ -24,8 +24,8 @@ import {
   FirebaseMeasurementId,
 } from "react-native-dotenv";
 
-import { Fonts, Palette } from "../styles";
-import Circles from "../components/styles/circles";
+import { Fonts, Palette } from "../../styles";
+import Circles from "../../components/styles/circles";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 

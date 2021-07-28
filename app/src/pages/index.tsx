@@ -1,6 +1,6 @@
 /* AUTH PAGES */
-export { default as Login } from "./login";
-export { default as Cadastro } from "./cadastro";
+export { default as Login } from "./auth/login";
+export { default as Cadastro } from "./auth/cadastro";
 
 /* USER PAGES */
 export { default as Home } from "./user/home";

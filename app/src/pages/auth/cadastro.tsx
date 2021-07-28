@@ -19,8 +19,8 @@ import {
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-import { Fonts, Palette } from "../styles";
-import Circles from "../components/styles/circles";
+import { Fonts, Palette } from "../../styles";
+import Circles from "../../components/styles/circles";
 
 export default function cadastro() {
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
