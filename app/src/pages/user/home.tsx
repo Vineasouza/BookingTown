@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  /* ITEM */
   item: {
     padding: 10,
     marginVertical: 8,

@@ -18,3 +18,4 @@ export { default as AdminProfile } from "./admin/profile";
 export { default as AdminAprovacaoReserva } from "./admin/aprovacaoReserva";
 export { default as AdminReservaCancelada } from "./admin/reservaCancelada";
 export { default as AdminReservaConfirmada } from "./admin/reservaConfirmada";
+export { default as AdminCofiguracoesAmbiente } from "./admin/configuracoesAmbiente";

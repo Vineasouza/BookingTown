@@ -7,6 +7,7 @@ import {
   AdminAprovacaoReserva,
   AdminReservaCancelada,
   AdminReservaConfirmada,
+  AdminCofiguracoesAmbiente,
 } from "../pages";
 
 const AdminHomeStack = createStackNavigator();
@@ -34,6 +35,11 @@ const AdminHomeRoutes: React.FC = () => {
         <AdminHomeStack.Screen
           name="AdminReservaConfirmada"
           component={AdminReservaConfirmada}
+          options={{ headerShown: false }}
+        />
+        <AdminHomeStack.Screen
+          name="AdminCofiguracoesAmbiente"
+          component={AdminCofiguracoesAmbiente}
           options={{ headerShown: false }}
         />
       </AdminHomeStack.Navigator>

@@ -13,7 +13,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import { AntDesign } from "@expo/vector-icons";
-import { FAB, Portal, Provider } from "react-native-paper";
+import { FAB } from "react-native-paper";
 
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles/";
@@ -278,7 +278,7 @@ export default function home() {
         style={styles.fab}
         small
         icon="plus"
-        onPress={() => console.log("Pressed")}
+        onPress={() => navigation.navigate("AdminCofiguracoesAmbiente")}
         color={Palette.green}
       />
 
