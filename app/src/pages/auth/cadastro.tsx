@@ -9,6 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -19,10 +20,17 @@ import {
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
+import { useDispatch } from "react-redux";
+import { fazerCadastro } from "../../actions";
+
 import { Fonts, Palette } from "../../styles";
 import Circles from "../../components/styles/circles";
 
+import firebase from "firebase";
+
 export default function cadastro() {
+  const dispatch = useDispatch();
+
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
   const [passo, setPasso] = useState<string>("nome");
@@ -140,11 +148,28 @@ export default function cadastro() {
       compSenha(dados.senha.value, dados.confirmasenha.value), // ! verifica se as senhas estão iguais
     ].every((e) => e === true);
 
-    valid
-      ? (paraPasso("sucesso"), setCampoRequerido(false))
-      : setCampoRequerido(true);
+    valid ? lidarComCadastro() : setCampoRequerido(true);
   }
   /* ******************************************************************************** */
+
+  const lidarComCadastro = () => {
+    setCarregando(true);
+
+    return (
+      dispatch(
+        fazerCadastro(dados)
+      ) as unknown as Promise<firebase.database.Reference>
+    )
+      .then(() => {
+        // dispatch(limparNovoUsuario());
+        return paraPasso("sucesso");
+      })
+      .catch((err) => paraPasso("erro"))
+      .then(() => {
+        setCarregando(false);
+        setCampoRequerido(false);
+      });
+  };
 
   const renderizaPassos = () => {
     switch (passo) {
@@ -305,10 +330,10 @@ export default function cadastro() {
                 style={styles.input}
                 autoCompleteType="email"
                 textContentType="emailAddress"
-                keyboardType="email-address"
+                keyboardType="default"
                 onChangeText={(e) => handleChange("email", e)}
                 value={dados.email.value}
-                autoCapitalize="none"
+                // autoCapitalize="none"
               />
               {campoRequerido && (
                 <View style={styles.errorContainer}>
@@ -360,28 +385,32 @@ export default function cadastro() {
               <Text style={styles.textoMenorHeader}>Passo 4 de 4</Text>
             </View>
             <View style={styles.inputContainer}>
-              <TextInput
-                placeholder="Digite uma senha"
-                secureTextEntry={ehVisivel}
-                autoCompleteType="password"
-                textContentType="password"
-                placeholderTextColor="rgba(58, 51, 53, 0.5)"
-                style={styles.input}
-                onChangeText={(e) => handleChange("senha", e)}
-                value={dados.senha.value}
-                maxLength={20}
-              />
-              <TextInput
-                placeholder="Confirme a senha"
-                secureTextEntry={ehVisivel}
-                autoCompleteType="password"
-                textContentType="password"
-                placeholderTextColor="rgba(58, 51, 53, 0.5)"
-                style={styles.input}
-                onChangeText={(e) => handleChange("confirmasenha", e)}
-                value={dados.confirmasenha.value}
-                maxLength={20}
-              />
+              <View>
+                <TextInput
+                  placeholder="Digite uma senha"
+                  secureTextEntry={ehVisivel}
+                  autoCompleteType="password"
+                  textContentType="password"
+                  placeholderTextColor="rgba(58, 51, 53, 0.5)"
+                  style={styles.input}
+                  onChangeText={(e) => handleChange("senha", e)}
+                  value={dados.senha.value}
+                  maxLength={20}
+                />
+              </View>
+              <View>
+                <TextInput
+                  placeholder="Confirme a senha"
+                  secureTextEntry={ehVisivel}
+                  autoCompleteType="password"
+                  textContentType="password"
+                  placeholderTextColor="rgba(58, 51, 53, 0.5)"
+                  style={styles.input}
+                  onChangeText={(e) => handleChange("confirmasenha", e)}
+                  value={dados.confirmasenha.value}
+                  maxLength={20}
+                />
+              </View>
               <View style={styles.inputVisibleContainer}>
                 <TouchableOpacity
                   onPress={showPassword}
@@ -478,7 +507,7 @@ export default function cadastro() {
                 />
               </View>
               <TouchableNativeFeedback
-                onPress={() => paraPasso("erro")}
+                onPress={() => navigation.navigate("Login")}
                 background={TouchableNativeFeedback.Ripple(
                   (rippleColor = Palette.white),
                   (rippleOverflow = false),

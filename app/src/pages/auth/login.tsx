@@ -12,6 +12,9 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
+import { useDispatch, useSelector } from "react-redux";
+
+import { fazerLogin } from "../../actions";
 
 import firebase from "firebase";
 import {
@@ -30,6 +33,9 @@ import Circles from "../../components/styles/circles";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function login() {
+  const dispatch = useDispatch();
+  const user = useSelector((state: any) => state.user);
+
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
 
@@ -68,18 +74,30 @@ export default function login() {
   async function aoSubmeter() {
     setCarregando(true);
 
-    await firebase
-      .auth()
-      .signInWithEmailAndPassword(dados.email.value, dados.senha.value)
-      .then((user) => {
-        setCarregando(false);
+    (
+      dispatch(
+        fazerLogin(dados)
+      ) as unknown as Promise<firebase.database.Reference>
+    )
+      .then((tipo: any) => {
         setError(false);
-        console.log(user);
+        switch (tipo) {
+          case "usuario":
+            navigation.navigate("User");
+            break;
+          case "admin":
+            navigation.navigate("Admin");
+            break;
+          default:
+            navigation.navigate("Login");
+        }
       })
       .catch((error) => {
-        setCarregando(false);
         setError(true);
         console.log(error);
+      })
+      .finally(() => {
+        setCarregando(false);
       });
   }
 

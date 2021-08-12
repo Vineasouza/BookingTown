@@ -5,12 +5,13 @@ import AppLoading from "expo-app-loading";
 import { StyleSheet, SafeAreaView } from "react-native";
 import { useFonts } from "expo-font";
 import { Provider } from "react-redux";
-import { createStore } from "redux";
+import { createStore, applyMiddleware } from "redux";
 
 import { Fonts, Palette } from "./src/styles/";
 import rootReducer from "./src/reducers";
+import reduxThunk from "redux-thunk";
 
-const store = createStore(rootReducer);
+const store = createStore(rootReducer, applyMiddleware(reduxThunk));
 
 import {
   Roboto_100Thin,
@@ -42,6 +43,10 @@ import {
 
 import { FugazOne_400Regular } from "@expo-google-fonts/fugaz-one";
 import Routes from "./src/routes";
+
+import { LogBox } from "react-native";
+
+LogBox.ignoreLogs(["Setting a timer"]);
 
 export default function App() {
   let [fontsLoaded] = useFonts({

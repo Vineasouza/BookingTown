@@ -8,12 +8,18 @@ import {
   TouchableNativeFeedback,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
+import { fazerLogout } from "../../actions";
+import { useNavigation } from "@react-navigation/native";
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles";
+import { useDispatch, useSelector } from "react-redux";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+import firebase from "firebase";
 
 export default function profile() {
+  const navigation = useNavigation();
+  const usuario = useSelector((state: any) => state.user);
+  const dispatch = useDispatch();
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const [dados, setDados] = useState({
     nome: "Ademir Nelson",
@@ -26,6 +32,15 @@ export default function profile() {
   setTimeout(() => {
     setCarregando(false);
   }, 1000);
+
+  const desconectar = () => {
+    setCarregandoBotao(true);
+    (dispatch(fazerLogout()) as unknown as Promise<firebase.database.Reference>)
+      .then(() => {
+        navigation.navigate("Login");
+      })
+      .finally(() => setCarregandoBotao(false));
+  };
 
   const siglas = (name: string) => {
     const initials = name
@@ -63,7 +78,7 @@ export default function profile() {
       ) : (
         <>
           <View style={styles.headerContainer}>
-            <Icon initials={siglas(dados.nome)} />
+            <Icon initials={siglas(usuario.nome)} />
             <Text
               style={{
                 ...styles.textoIcon,
@@ -71,20 +86,20 @@ export default function profile() {
                 textTransform: "capitalize",
               }}
             >
-              {dados.nome}
+              {usuario.nome}
             </Text>
           </View>
           <View style={styles.conteudoContainer}>
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Email: </Text>
-              <Text style={styles.textoConteudo}>{dados.email}</Text>
+              <Text style={styles.textoConteudo}>{usuario.email}</Text>
             </View>
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Apartamento: </Text>
-              <Text style={styles.textoConteudo}>{dados.nApartamento}</Text>
+              <Text style={styles.textoConteudo}>{usuario.n_apartamento}</Text>
             </View>
             <TouchableNativeFeedback
-              // onPress={() => navegarPara("Home")}
+              onPress={() => desconectar()}
               background={TouchableNativeFeedback.Ripple(
                 (rippleColor = Palette.white),
                 (rippleOverflow = false),

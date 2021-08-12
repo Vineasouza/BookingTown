@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -11,6 +11,9 @@ import {
 } from "react-native";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useSelector, useDispatch } from "react-redux";
+import firebase from "firebase";
+import { listarAmbiente } from "../../actions";
 
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles";
@@ -46,13 +49,26 @@ const Item = ({ item, onPress }) => (
       <View style={styles.itemSquare}>
         <MaterialCommunityIcons name="party-popper" size={24} color="black" />
       </View>
-      <Text style={{ ...styles.title }}>{item.title}</Text>
+      <Text style={{ ...styles.title }}>{item.nome}</Text>
       <AntDesign name="right" size={24} color={Palette.black} />
     </View>
   </TouchableOpacity>
 );
 
 export default function home() {
+  const dispatch = useDispatch();
+  /* Renderiza lista de ambientes */
+  const ambientes = useSelector((state: any) => state.ambiente);
+  const carregarListaDeEspacos = async () => {
+    setCarregando(true);
+    await dispatch(listarAmbiente());
+    setCarregando(false);
+  };
+
+  useEffect(() => {
+    carregarListaDeEspacos();
+  }, []);
+
   const navigation = useNavigation();
   const [selectedId, setSelectedId] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -81,7 +97,7 @@ export default function home() {
           <ActivityIndicator size={36} color={Palette.green} />
         ) : (
           <FlatList
-            data={DATA}
+            data={ambientes}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             extraData={selectedId}

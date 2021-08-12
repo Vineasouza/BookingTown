@@ -9,48 +9,31 @@ import {
   SafeAreaView,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ActivityIndicator, FAB } from "react-native-paper";
+import { setNovoAmbiente } from "../../actions/fomularioNovoAmbienteActions";
+import {
+  selecionarAmbienteAtual,
+  setAmbienteAtual,
+} from "../../actions/ambienteAtualActions";
+import {
+  criarAmbiente,
+  deletarAmbiente,
+  listarAmbiente,
+  atualizarAmbiente,
+} from "../../actions";
+import { useSelector, useDispatch } from "react-redux";
 
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles/";
 import { ScrollView } from "react-native";
+import firebase from "firebase";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const ICON_SIZE = 28;
-
-const DATA = [
-  {
-    id: "0",
-    ambiente: "Churrasqueira 1",
-    descricao:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Praesent bibendum ipsum sit amet mollis cursus. Nullam mauris purus, commodo efficitur maximus nec, placerat ac ante.",
-    lotacaoMaxima: "40",
-  },
-  {
-    id: "1",
-    ambiente: "Salão de festas",
-    descricao:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Praesent bibendum ipsum sit amet mollis cursus. Nullam mauris purus, commodo efficitur maximus nec, placerat ac ante.",
-    lotacaoMaxima: "45",
-  },
-  {
-    id: "2",
-    ambiente: "Salão Gourmet",
-    descricao:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Praesent bibendum ipsum sit amet mollis cursus. Nullam mauris purus, commodo efficitur maximus nec, placerat ac ante.",
-    lotacaoMaxima: "20",
-  },
-  {
-    id: "3",
-    ambiente: "Churrasqueira 2",
-    descricao:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Praesent bibendum ipsum sit amet mollis cursus. Nullam mauris purus, commodo efficitur maximus nec, placerat ac ante.",
-    lotacaoMaxima: "30",
-  },
-];
 
 const Item = ({ item, onPress }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item]}>
@@ -58,7 +41,7 @@ const Item = ({ item, onPress }) => (
       <View style={styles.itemSquare}>
         <MaterialCommunityIcons name="party-popper" size={24} color="black" />
       </View>
-      <Text style={{ ...styles.title }}>{item.ambiente}</Text>
+      <Text style={{ ...styles.title }}>{item.nome}</Text>
       <AntDesign name="right" size={24} color={Palette.black} />
     </View>
   </TouchableOpacity>
@@ -67,8 +50,25 @@ const Item = ({ item, onPress }) => (
 export default function configuracoesAmbiente() {
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const novoAmbiente = useSelector(
+    (state: any) => state.formularioNovoAmbiente
+  );
+
+  /* Renderiza lista de ambientes */
+  const ambientes = useSelector((state: any) => state.ambiente);
+  const carregarListaDeEspacos = async () => {
+    setCarregandoLista(true);
+    await dispatch(listarAmbiente());
+    setCarregandoLista(false);
+  };
+
+  useEffect(() => {
+    carregarListaDeEspacos();
+  }, []);
 
   const CASE_INICIAL = "inicial";
+  const CASE_VISUALIZAR = "visualizar";
   const CASE_ADICIONAR = "adicionar";
   const CASE_MODIFICAR = "modificar";
   const CASE_MODIFICAR_INPUT = "modificar_input";
@@ -80,17 +80,14 @@ export default function configuracoesAmbiente() {
   const [carregandoLista, setCarregandoLista] = useState<boolean>(false);
   const [errorAdicionar, setErrorAdicionar] = useState<boolean>(false);
   const [errorModificar, setErrorModificar] = useState<boolean>(false);
-  const [novoAmbiente, setNovoAmbiente] = useState({
-    nome: { value: "" as string },
-    descricao: { value: "" as string },
-    lotacaoMaxima: { value: "" as string },
-  });
-  const [modificarAmbiente, setModificarAmbiente] = useState({
+  const [modificarAmbienteHook, setModificarAmbienteHook] = useState({
+    id: { value: "" as string },
     nome: { value: "" as string },
     descricao: { value: "" as string },
     lotacaoMaxima: { value: "" as string },
   });
   const [removerAmbiente, setRemoverAmbiente] = useState({
+    id: { value: "" as string },
     nome: { value: "" as string },
     descricao: { value: "" as string },
     lotacaoMaxima: { value: "" as string },
@@ -98,47 +95,80 @@ export default function configuracoesAmbiente() {
   const [selectedId, setSelectedId] = useState(null);
 
   /* ADICIONAR */
-  function handleChangeAdicionar(field: string, text: string) {
-    setNovoAmbiente((state) => ({ ...state, [field]: { value: text } }));
-  }
+  const mudaValor = (campo: any, valor: any) => {
+    dispatch(setNovoAmbiente(campo, valor));
+  };
 
-  function handleSalvar() {
-    setCarregando(true);
-    setTimeout(() => {
-      setPasso(CASE_INICIAL);
-      setCarregando(false);
-    }, 2000);
-  }
-
-  function verificaCampos() {
-    const naoVazia = (text) => {
+  function verificaCampos(text: any) {
+    const naoVazia = (text: any) => {
       const test = text.trim() !== "";
       return test;
     };
 
     let valid = [
-      naoVazia(novoAmbiente.nome.value),
-      naoVazia(novoAmbiente.descricao.value),
-      naoVazia(novoAmbiente.lotacaoMaxima.value),
+      naoVazia(text.nome),
+      naoVazia(text.descricao),
+      naoVazia(text.lotacaoMaxima),
     ].every((e) => e === true);
 
-    valid
-      ? (handleSalvar(), setErrorAdicionar(false))
-      : setErrorAdicionar(true);
+    return valid;
   }
 
+  const adicionarAmbiente = () => {
+    setCarregando(true);
+
+    if (verificaCampos(novoAmbiente)) {
+      (
+        dispatch(
+          criarAmbiente(novoAmbiente)
+        ) as unknown as Promise<firebase.database.Reference>
+      )
+        .then(
+          () => (Alert.alert("Ambiente Adicionado"), setPasso(CASE_INICIAL))
+        )
+        .catch((err) => (setCarregando(false), setErrorAdicionar(true)))
+        .finally(() => setErrorAdicionar(false));
+    } else {
+      setErrorAdicionar(true);
+    }
+    setCarregando(false);
+  };
+
   /* MODIFICAR */
-  function handleChangeModificar(field: string, text: string) {
-    setModificarAmbiente((state) => ({ ...state, [field]: { value: text } }));
-  }
+  const ambienteAtual = useSelector((state: any) => state.ambienteAtual);
+
+  const modificarValor = (campo: any, valor: any) => {
+    dispatch(setAmbienteAtual(campo, valor));
+  };
+
+  const modficarAmbiente = () => {
+    setCarregando(true);
+
+    if (verificaCampos(ambienteAtual)) {
+      (
+        dispatch(
+          atualizarAmbiente(ambienteAtual)
+        ) as unknown as Promise<firebase.database.Reference>
+      )
+        .then(
+          () => (Alert.alert("Ambiente modificado"), setPasso(CASE_INICIAL))
+        )
+        .catch((err) => (setCarregando(false), setErrorAdicionar(true)))
+        .finally(() => setErrorAdicionar(false));
+    } else {
+      setErrorAdicionar(true);
+    }
+    setCarregando(false);
+  };
 
   const renderItemModificar = ({ item }) => {
     return (
       <Item
         item={item}
         onPress={() => (
-          setModificarAmbiente({
-            nome: { value: item.ambiente },
+          setModificarAmbienteHook({
+            id: { value: item.id },
+            nome: { value: item.nome },
             descricao: { value: item.descricao },
             lotacaoMaxima: { value: item.lotacaoMaxima },
           }),
@@ -148,31 +178,6 @@ export default function configuracoesAmbiente() {
     );
   };
 
-  function handleSalvarModificar() {
-    setCarregando(true);
-    setTimeout(() => {
-      setPasso(CASE_INICIAL);
-      setCarregando(false);
-    }, 2000);
-  }
-
-  function verificaCamposModificar() {
-    const naoVazia = (text) => {
-      const test = text.trim() !== "";
-      return test;
-    };
-
-    let valid = [
-      naoVazia(modificarAmbiente.nome.value),
-      naoVazia(modificarAmbiente.descricao.value),
-      naoVazia(modificarAmbiente.lotacaoMaxima.value),
-    ].every((e) => e === true);
-
-    valid
-      ? (handleSalvarModificar(), setErrorModificar(false))
-      : setErrorModificar(true);
-  }
-
   /* REMOVER */
   const renderItemRemover = ({ item }) => {
     return (
@@ -180,7 +185,8 @@ export default function configuracoesAmbiente() {
         item={item}
         onPress={() => (
           setRemoverAmbiente({
-            nome: { value: item.ambiente },
+            id: { value: item.id },
+            nome: { value: item.nome },
             descricao: { value: item.descricao },
             lotacaoMaxima: { value: item.lotacaoMaxima },
           }),
@@ -190,12 +196,21 @@ export default function configuracoesAmbiente() {
     );
   };
 
-  function handleRemover() {
+  const renderItemVisualizar = ({ item }) => {
+    return <Item item={item} onPress={() => null} />;
+  };
+
+  function handleRemover(id: any) {
     setCarregando(true);
-    setTimeout(() => {
-      setPasso(CASE_INICIAL);
-      setCarregando(false);
-    }, 2000);
+    (
+      dispatch(
+        deletarAmbiente(id)
+      ) as unknown as Promise<firebase.database.Reference>
+    )
+      .then(() => Alert.alert("Ambiente removido"))
+      .catch((err) => console.log(err));
+    setCarregando(false);
+    setPasso(CASE_INICIAL);
   }
 
   const renderizaPassos = () => {
@@ -211,6 +226,27 @@ export default function configuracoesAmbiente() {
             </View>
             <ScrollView style={styles.scrollContainer}>
               <View style={styles.conteudoContainer}>
+                <TouchableNativeFeedback
+                  background={TouchableNativeFeedback.Ripple(
+                    (rippleColor = "rgba(58, 51, 53, 0.1)"),
+                    (rippleOverflow = false),
+                    (rippleRadius = 120)
+                  )}
+                  onPress={() => setPasso(CASE_VISUALIZAR)}
+                >
+                  <View style={styles.touchableAcao}>
+                    <View style={styles.iconeAcaoContainer}>
+                      <AntDesign
+                        name="eyeo"
+                        size={ICON_SIZE}
+                        color={Palette.black}
+                      />
+                    </View>
+                    <Text style={styles.textoBotaoAcao}>
+                      Visualizar ambientes
+                    </Text>
+                  </View>
+                </TouchableNativeFeedback>
                 <TouchableNativeFeedback
                   background={TouchableNativeFeedback.Ripple(
                     (rippleColor = "rgba(58, 51, 53, 0.1)"),
@@ -278,6 +314,36 @@ export default function configuracoesAmbiente() {
             </ScrollView>
           </>
         );
+      case CASE_VISUALIZAR:
+        return (
+          <>
+            <FAB
+              style={styles.fab}
+              small
+              icon={() => (
+                <AntDesign name="arrowleft" size={24} color={Palette.green} />
+              )}
+              onPress={() => setPasso(CASE_INICIAL)}
+              color={Palette.green}
+            />
+            <View style={styles.headerContainer}>
+              <Text style={styles.textoMaiorHeader}>Ambientes Cadastrados</Text>
+            </View>
+            <SafeAreaView style={styles.flatlistContainer}>
+              {carregandoLista ? (
+                <ActivityIndicator size={36} color={Palette.green} />
+              ) : (
+                <FlatList
+                  data={ambientes}
+                  renderItem={renderItemVisualizar}
+                  keyExtractor={(item) => item.id}
+                  extraData={selectedId}
+                  showsVerticalScrollIndicator={false}
+                />
+              )}
+            </SafeAreaView>
+          </>
+        );
       case CASE_ADICIONAR:
         return (
           <>
@@ -302,8 +368,8 @@ export default function configuracoesAmbiente() {
                   style={styles.input}
                   autoCompleteType="off"
                   keyboardType="default"
-                  onChangeText={(e) => handleChangeAdicionar("nome", e)}
-                  value={novoAmbiente.nome.value}
+                  onChangeText={(e) => mudaValor("nome", e)}
+                  value={novoAmbiente.nome}
                   autoCapitalize="words"
                 />
                 <TextInput
@@ -314,8 +380,8 @@ export default function configuracoesAmbiente() {
                   autoCompleteType="off"
                   keyboardType="default"
                   maxLength={100}
-                  onChangeText={(e) => handleChangeAdicionar("descricao", e)}
-                  value={novoAmbiente.descricao.value}
+                  onChangeText={(e) => mudaValor("descricao", e)}
+                  value={novoAmbiente.descricao}
                   autoCapitalize="none"
                 />
                 <TextInput
@@ -325,11 +391,10 @@ export default function configuracoesAmbiente() {
                   style={styles.input}
                   autoCompleteType="off"
                   keyboardType="numeric"
-                  onChangeText={(e) =>
-                    handleChangeAdicionar("lotacaoMaxima", e)
-                  }
-                  value={novoAmbiente.lotacaoMaxima.value}
+                  onChangeText={(e) => mudaValor("lotacaoMaxima", e)}
+                  value={novoAmbiente.lotacaoMaxima}
                   autoCapitalize="none"
+                  maxLength={3}
                 />
                 {errorAdicionar && (
                   <Text style={styles.textoErrorAdicionar}>
@@ -342,7 +407,7 @@ export default function configuracoesAmbiente() {
                     (rippleOverflow = false),
                     (rippleRadius = 120)
                   )}
-                  onPress={() => verificaCampos()}
+                  onPress={() => adicionarAmbiente()}
                 >
                   <View style={styles.touchableSalvar}>
                     {carregando ? (
@@ -378,7 +443,7 @@ export default function configuracoesAmbiente() {
                 <ActivityIndicator size={36} color={Palette.green} />
               ) : (
                 <FlatList
-                  data={DATA}
+                  data={ambientes}
                   renderItem={renderItemModificar}
                   keyExtractor={(item) => item.id}
                   extraData={selectedId}
@@ -402,7 +467,7 @@ export default function configuracoesAmbiente() {
             />
             <View style={styles.headerContainer}>
               <Text style={styles.textoMaiorHeader}>
-                {"Modificar " + modificarAmbiente.nome.value}
+                {"Modificar " + ambienteAtual.nome}
               </Text>
             </View>
             <ScrollView style={styles.scrollContainer}>
@@ -415,8 +480,8 @@ export default function configuracoesAmbiente() {
                   style={styles.input}
                   autoCompleteType="off"
                   keyboardType="default"
-                  onChangeText={(e) => handleChangeModificar("nome", e)}
-                  value={modificarAmbiente.nome.value}
+                  onChangeText={(e) => modificarValor("nome", e)}
+                  value={ambienteAtual.nome}
                   autoCapitalize="words"
                 />
                 <Text style={styles.textoLabel}>Descrição do ambiente</Text>
@@ -428,8 +493,8 @@ export default function configuracoesAmbiente() {
                   autoCompleteType="off"
                   keyboardType="default"
                   maxLength={100}
-                  onChangeText={(e) => handleChangeModificar("descricao", e)}
-                  value={modificarAmbiente.descricao.value}
+                  onChangeText={(e) => modificarValor("descricao", e)}
+                  value={ambienteAtual.descricao}
                   autoCapitalize="none"
                 />
                 <Text style={styles.textoLabel}>Lotação máxima</Text>
@@ -441,10 +506,8 @@ export default function configuracoesAmbiente() {
                   style={styles.input}
                   autoCompleteType="off"
                   keyboardType="numeric"
-                  onChangeText={(e) =>
-                    handleChangeModificar("lotacaoMaxima", e)
-                  }
-                  value={modificarAmbiente.lotacaoMaxima.value}
+                  onChangeText={(e) => modificarValor("lotacaoMaxima", e)}
+                  value={ambienteAtual.lotacaoMaxima}
                   autoCapitalize="none"
                 />
                 {errorModificar && (
@@ -458,7 +521,7 @@ export default function configuracoesAmbiente() {
                     (rippleOverflow = false),
                     (rippleRadius = 120)
                   )}
-                  onPress={() => verificaCamposModificar()}
+                  onPress={() => modficarAmbiente()}
                 >
                   <View style={styles.touchableSalvar}>
                     {carregando ? (
@@ -493,7 +556,7 @@ export default function configuracoesAmbiente() {
                 <ActivityIndicator size={36} color={Palette.green} />
               ) : (
                 <FlatList
-                  data={DATA}
+                  data={ambientes}
                   renderItem={renderItemRemover}
                   keyExtractor={(item) => item.id}
                   extraData={selectedId}
@@ -549,7 +612,7 @@ export default function configuracoesAmbiente() {
                   (rippleOverflow = false),
                   (rippleRadius = 120)
                 )}
-                onPress={() => handleRemover()}
+                onPress={() => handleRemover(removerAmbiente.id.value)}
               >
                 <View style={styles.touchableRemover}>
                   {carregando ? (
@@ -666,7 +729,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     borderColor: "rgba(58, 51, 53, 0.7)",
-    marginVertical: 10,
+    marginVertical: 9,
     flexDirection: "row",
     paddingVertical: 15,
   },

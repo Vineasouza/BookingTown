@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { Fonts, Palette } from "../styles";
+import { useSelector } from "react-redux";
 
 import AuthRoutes from "./auth.routes";
 import AdminRoutes from "./admin.routes";
 import UserRoutes from "./user.routes";
+import MainRoutes from "./main.routes";
 
 const Routes: React.FC = () => {
-  const [signed, setSigned] = useState(true);
+  const user = useSelector((state: any) => state.user);
+
+  const [signed, setSigned] = useState(false);
   const [loading, setLoading] = useState(false);
 
   if (loading) {
@@ -25,7 +29,7 @@ const Routes: React.FC = () => {
     );
   }
 
-  return signed ? <AdminRoutes /> : <AuthRoutes />;
+  return <MainRoutes />;
 };
 
 export default Routes;

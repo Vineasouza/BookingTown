@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import { Login, Cadastro } from "../pages";
+import { Login, Cadastro, Home } from "../pages";
 
 const AuthStack = createStackNavigator();
 
@@ -20,6 +20,11 @@ const AuthRoutes: React.FC = () => {
         <AuthStack.Screen
           name="Cadastro"
           component={Cadastro}
+          options={{ headerShown: false }}
+        />
+        <AuthStack.Screen
+          name="HomeUsuario"
+          component={Home}
           options={{ headerShown: false }}
         />
       </AuthStack.Navigator>
