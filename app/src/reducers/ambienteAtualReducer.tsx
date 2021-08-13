@@ -8,7 +8,7 @@ const ambienteAtualReducer = (state: any = null, action: any) => {
     case SELECIONAR_AMBIENTE:
       return action.ambiente;
     case SET_AMBIENTE_ATUAL:
-      return { ...state, [action.ambiente]: action.valor };
+      return { ...state, [action.campo]: action.valor };
     default:
       return state;
   }

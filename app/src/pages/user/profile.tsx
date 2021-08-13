@@ -78,7 +78,7 @@ export default function profile() {
       ) : (
         <>
           <View style={styles.headerContainer}>
-            <Icon initials={siglas(usuario.nome)} />
+            <Icon initials={siglas(usuario?.nome)} />
             <Text
               style={{
                 ...styles.textoIcon,
@@ -86,17 +86,17 @@ export default function profile() {
                 textTransform: "capitalize",
               }}
             >
-              {usuario.nome}
+              {usuario?.nome}
             </Text>
           </View>
           <View style={styles.conteudoContainer}>
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Email: </Text>
-              <Text style={styles.textoConteudo}>{usuario.email}</Text>
+              <Text style={styles.textoConteudo}>{usuario?.email}</Text>
             </View>
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Apartamento: </Text>
-              <Text style={styles.textoConteudo}>{usuario.n_apartamento}</Text>
+              <Text style={styles.textoConteudo}>{usuario?.n_apartamento}</Text>
             </View>
             <TouchableNativeFeedback
               onPress={() => desconectar()}

@@ -166,12 +166,14 @@ export default function configuracoesAmbiente() {
       <Item
         item={item}
         onPress={() => (
-          setModificarAmbienteHook({
-            id: { value: item.id },
-            nome: { value: item.nome },
-            descricao: { value: item.descricao },
-            lotacaoMaxima: { value: item.lotacaoMaxima },
-          }),
+          // setModificarAmbienteHook({
+          //   id: { value: item.id },
+          //   nome: { value: item.nome },
+          //   descricao: { value: item.descricao },
+          //   lotacaoMaxima: { value: item.lotacaoMaxima },
+          // }),
+          console.log(item),
+          dispatch(selecionarAmbienteAtual(item)),
           setPasso(CASE_MODIFICAR_INPUT)
         )}
       />
@@ -462,12 +464,12 @@ export default function configuracoesAmbiente() {
               icon={() => (
                 <AntDesign name="arrowleft" size={24} color={Palette.green} />
               )}
-              onPress={() => setPasso(CASE_INICIAL)}
+              onPress={() => setPasso(CASE_MODIFICAR)}
               color={Palette.green}
             />
             <View style={styles.headerContainer}>
               <Text style={styles.textoMaiorHeader}>
-                {"Modificar " + ambienteAtual.nome}
+                {"Modificar " + ambienteAtual?.nome}
               </Text>
             </View>
             <ScrollView style={styles.scrollContainer}>
@@ -481,7 +483,7 @@ export default function configuracoesAmbiente() {
                   autoCompleteType="off"
                   keyboardType="default"
                   onChangeText={(e) => modificarValor("nome", e)}
-                  value={ambienteAtual.nome}
+                  value={ambienteAtual?.nome}
                   autoCapitalize="words"
                 />
                 <Text style={styles.textoLabel}>Descrição do ambiente</Text>
@@ -494,7 +496,7 @@ export default function configuracoesAmbiente() {
                   keyboardType="default"
                   maxLength={100}
                   onChangeText={(e) => modificarValor("descricao", e)}
-                  value={ambienteAtual.descricao}
+                  value={ambienteAtual?.descricao}
                   autoCapitalize="none"
                 />
                 <Text style={styles.textoLabel}>Lotação máxima</Text>
@@ -507,7 +509,7 @@ export default function configuracoesAmbiente() {
                   autoCompleteType="off"
                   keyboardType="numeric"
                   onChangeText={(e) => modificarValor("lotacaoMaxima", e)}
-                  value={ambienteAtual.lotacaoMaxima}
+                  value={ambienteAtual?.lotacaoMaxima}
                   autoCapitalize="none"
                 />
                 {errorModificar && (

@@ -20,29 +20,6 @@ import { Palette, Fonts } from "../../styles";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-const DATA = [
-  {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    title: "Churrasqueira",
-  },
-  {
-    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-    title: "Salão de festas",
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72",
-    title: "Salão Gourmet",
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d724",
-    title: "Academia",
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72224",
-    title: "Piscina",
-  },
-];
-
 const Item = ({ item, onPress }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item]}>
     <View style={styles.itemContainer}>
