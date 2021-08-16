@@ -20,7 +20,7 @@ interface DateProps {
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-export default function Date({ data, setData }: DateProps) {
+export default function Data({ data, setData }: DateProps) {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [dateDisplay, setDateDisplay] = useState(moment(data).clone());
   const navigation = useNavigation();
@@ -75,7 +75,7 @@ export default function Date({ data, setData }: DateProps) {
         onConfirm={handleConfirm}
         onCancel={hideDatePicker}
         onDateChange={setData}
-        // minimumDate={new Date()}
+        minimumDate={new Date()}
       />
     </View>
   );

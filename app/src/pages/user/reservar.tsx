@@ -12,6 +12,9 @@ import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import "moment/locale/pt-br";
 
+import { criarReserva } from "../../actions/reservasActions";
+import { useDispatch, useSelector } from "react-redux";
+import firebase from "firebase";
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles";
 import Date from "../../components/Date";
@@ -19,16 +22,47 @@ import Date from "../../components/Date";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function reservar({ route }) {
+  const dispatch = useDispatch();
+  const usuario = useSelector((state: any) => state.user);
+
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
   const [carregandoInformacoes, setCarregandoInformacoes] = useState(true);
   const [carregandoBotao, setCarregandoBotao] = useState(false);
-  const [label, setLabel] = useState("");
+  const [label, setLabel] = useState({
+    nome: "" as string,
+    lotacaoMaxima: "" as string,
+    descricao: "" as string,
+    id: "" as string,
+  });
   const [data, setData] = useState(moment());
 
-  useEffect(() => {
-    setLabel(route.params.label);
-  });
+  console.log(route.params.label.id);
+  console.log(usuario?.nome);
+
+  function reservarAmbiente() {
+    setCarregandoBotao(true);
+
+    const reserva = {
+      data: moment(data).format("DD/MM/YYYY"),
+      nomeAmbiente: route.params.label.nome,
+      idAmbiente: route.params.label.id,
+      nomeMorador: usuario?.nome,
+      aptMorador: usuario?.n_apartamento,
+      idMorador: usuario?.uid,
+      status: "Pendente",
+    };
+
+    (
+      dispatch(
+        criarReserva(reserva)
+      ) as unknown as Promise<firebase.database.Reference>
+    )
+      .then(() => navigation.navigate("ReservaRealizada"))
+      .catch((err) => console.log(err));
+
+    setCarregandoBotao(false);
+  }
 
   function navegarPara(route: string) {
     setCarregandoBotao(true);
@@ -48,7 +82,7 @@ export default function reservar({ route }) {
       <View style={styles.headerContainer}>
         <Text style={styles.textoHeader}>Reservar</Text>
         <Text style={{ ...styles.textoHeader, textTransform: "capitalize" }}>
-          {label}
+          {route.params.label.nome}
         </Text>
       </View>
       <ScrollView
@@ -73,7 +107,9 @@ export default function reservar({ route }) {
               >
                 Lotação Máxima:{" "}
               </Text>
-              <Text style={styles.textoConteudo}> 00 </Text>
+              <Text style={styles.textoConteudo}>
+                {route.params.label.lotacaoMaxima}{" "}
+              </Text>
               <Text style={styles.textoConteudo}>pessoas</Text>
             </View>
             <View style={styles.itemsContainer}>
@@ -83,10 +119,7 @@ export default function reservar({ route }) {
                 Descrição:{" "}
               </Text>
               <Text style={styles.textoConteudo}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Praesent bibendum ipsum sit amet mollis cursus. Nullam mauris
-                purus, commodo efficitur maximus nec, placerat ac ante. Praesent
-                justo eros, consequat ut ligula at, convallis faucibus orci.
+                {route.params.label.descricao}
               </Text>
             </View>
             <View style={styles.dataContainer}>
@@ -96,7 +129,7 @@ export default function reservar({ route }) {
               <Date data={data} setData={setData} />
             </View>
             <TouchableNativeFeedback
-              onPress={() => navegarPara("ReservaRealizada")}
+              onPress={() => reservarAmbiente()}
               background={TouchableNativeFeedback.Ripple(
                 (rippleColor = Palette.white),
                 (rippleOverflow = false),

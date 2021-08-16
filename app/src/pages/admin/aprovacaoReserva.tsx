@@ -13,12 +13,17 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 
+import { useSelector, useDispatch } from "react-redux";
+import firebase from "firebase";
+import { atualizarReserva } from "../../actions/reservasActions";
+
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles/";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function aprovacaoReserva({ route }) {
+  const dispatch = useDispatch();
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
   const [carregando, setCarregando] = useState(true);
@@ -26,29 +31,70 @@ export default function aprovacaoReserva({ route }) {
   const [carregandoBotao, setCarregandoBotao] = useState(false);
   const [dados, setDados] = useState({
     id: "" as string,
-    ambiente: "" as string,
-    descricao: "" as string,
-    solicitante: "" as string,
-    nApartamento: 0 as number,
-    dataReserva: "" as string,
-    lotacao: 0 as number,
+    idMorador: "" as string,
+    idAmbiente: "" as string,
+    nomeAmbiente: "" as string,
+    // descricao: "" as string,
+    nomeMorador: "" as string,
+    aptMorador: 0 as number,
+    data: "" as string,
+    // lotacao: 0 as number,
     status: "" as string,
   });
 
   const lorem =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Praesent bibendum ipsum sit amet mollis cursus. Nullam mauris purus, commodo efficitur maximus nec, placerat ac ante.";
+
   useEffect(() => {
     setDados({
       id: route.params.item.id,
-      ambiente: route.params.item.ambiente,
-      descricao: lorem,
-      solicitante: route.params.item.solicitante,
-      nApartamento: route.params.item.nApartamento,
-      lotacao: 10,
-      dataReserva: route.params.item.dataReserva,
+      idMorador: route.params.item.idMorador,
+      idAmbiente: route.params.item.idAmbiente,
+      nomeAmbiente: route.params.item.nomeAmbiente,
+      // descricao: lorem,
+      nomeMorador: route.params.item.nomeMorador,
+      aptMorador: route.params.item.aptMorador,
+      // lotacao: 10,
+      data: route.params.item.data,
       status: route.params.item.status,
     });
   }, []);
+
+  function aprovarReserva() {
+    setCarregandoBotao(true);
+    const reservaAtualizada = {
+      ...dados,
+      status: "Reservado",
+    };
+
+    (
+      dispatch(
+        atualizarReserva(reservaAtualizada)
+      ) as unknown as Promise<firebase.database.Reference>
+    )
+      .then(() => navigation.navigate("AdminReservaConfirmada"))
+      .catch((err) => console.log(err));
+
+    setCarregandoBotao(false);
+  }
+
+  function cancelarReserva() {
+    setCarregandoBotao(true);
+    const reservaAtualizada = {
+      ...dados,
+      status: "Cancelado",
+    };
+
+    (
+      dispatch(
+        atualizarReserva(reservaAtualizada)
+      ) as unknown as Promise<firebase.database.Reference>
+    )
+      .then(() => navigation.navigate("AdminReservaCancelada"))
+      .catch((err) => console.log(err));
+
+    setCarregandoBotao(false);
+  }
 
   setTimeout(() => {
     setCarregando(false);
@@ -131,7 +177,7 @@ export default function aprovacaoReserva({ route }) {
                 </View>
               </TouchableNativeFeedback>
               <TouchableNativeFeedback
-                onPress={() => navegar("AdminReservaCancelada")}
+                onPress={() => cancelarReserva()}
                 background={TouchableNativeFeedback.Ripple(
                   (rippleColor = "rgba(235, 87, 87, 0.1)"),
                   (rippleOverflow = true),
@@ -158,7 +204,9 @@ export default function aprovacaoReserva({ route }) {
         </View>
       </Modal>
       <View style={styles.headerContainer}>
-        <Text style={styles.textoHeader}>{"Reserva " + dados.ambiente}</Text>
+        <Text style={styles.textoHeader}>
+          {"Reserva " + dados.nomeAmbiente}
+        </Text>
       </View>
       {carregando ? (
         <ActivityIndicator
@@ -171,30 +219,30 @@ export default function aprovacaoReserva({ route }) {
           <ScrollView showsVerticalScrollIndicator={true}>
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Ambiente: </Text>
-              <Text style={styles.textoConteudo}>{dados.ambiente}</Text>
+              <Text style={styles.textoConteudo}>{dados.nomeAmbiente}</Text>
             </View>
-            <View style={styles.conteudo}>
+            {/* <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Descrição: </Text>
               <Text style={styles.textoConteudo}>{dados.descricao}</Text>
-            </View>
+            </View> */}
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Solicitante: </Text>
-              <Text style={styles.textoConteudo}>{dados.solicitante}</Text>
+              <Text style={styles.textoConteudo}>{dados.nomeMorador}</Text>
               <Text style={styles.textoConteudoPrincipal}>{"\t"}Apt: </Text>
-              <Text style={styles.textoConteudo}>{dados.nApartamento}</Text>
+              <Text style={styles.textoConteudo}>{dados.aptMorador}</Text>
             </View>
-            <View style={styles.conteudo}>
+            {/* <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>
                 Lotação Máxima:{" "}
               </Text>
               <Text style={styles.textoConteudo}>{dados.lotacao + " "}</Text>
               <Text style={styles.textoConteudo}>Pessoas</Text>
-            </View>
+            </View> */}
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>
                 Dia da reserva:{" "}
               </Text>
-              <Text style={styles.textoConteudo}>{dados.dataReserva}</Text>
+              <Text style={styles.textoConteudo}>{dados.data}</Text>
             </View>
             <View style={styles.conteudo}>
               <Text style={styles.textoConteudoPrincipal}>Status: </Text>
@@ -204,7 +252,7 @@ export default function aprovacaoReserva({ route }) {
             {tipoStatus(dados.status) && (
               <View style={{ ...styles.conteudo, marginTop: 15 }}>
                 <TouchableNativeFeedback
-                  onPress={() => navegar("AdminReservaConfirmada")}
+                  onPress={() => aprovarReserva()}
                   background={TouchableNativeFeedback.Ripple(
                     (rippleColor = Palette.white),
                     (rippleOverflow = false),

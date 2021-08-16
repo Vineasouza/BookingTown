@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -21,11 +21,6 @@ export default function profile() {
   const usuario = useSelector((state: any) => state.user);
   const dispatch = useDispatch();
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
-  const [dados, setDados] = useState({
-    nome: "Vinicius Augusto de Souza",
-    email: "vinicius@gmail.com",
-    nApartamento: 101,
-  });
   const [carregando, setCarregando] = useState(true);
   const [carregandoBotao, setCarregandoBotao] = useState(false);
 

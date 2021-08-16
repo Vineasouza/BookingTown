@@ -15,6 +15,9 @@ import moment from "moment";
 import { AntDesign } from "@expo/vector-icons";
 import { FAB } from "react-native-paper";
 
+import { useDispatch, useSelector } from "react-redux";
+import { listarTodasReservas } from "../../actions/reservasActions";
+
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles/";
 import { ScrollView } from "react-native-gesture-handler";
@@ -33,43 +36,6 @@ const DATA_HOJE = moment().format("DD" + "/MM" + "/YYYY");
 const DATA_AMANHA = moment()
   .add("1", "day")
   .format("DD" + "/MM" + "/YYYY");
-
-const DATA = [
-  {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    ambiente: "Churrasqueira",
-    solicitante: "Jorginho",
-    nApartamento: 121,
-    dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: STATUS_RESERVADO,
-  },
-  {
-    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-    ambiente: "Salão de festas",
-    solicitante: "Alberto",
-    nApartamento: 122,
-    dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: STATUS_PENDENTE,
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72",
-    ambiente: "Salão Gourmet",
-    solicitante: "Roberta",
-    nApartamento: 123,
-    dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: STATUS_PENDENTE,
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d724",
-    ambiente: "Churrasqueira",
-    solicitante: "Rafaela",
-    nApartamento: 124,
-    dataReserva: moment()
-      .add("1", "day")
-      .format("DD" + "/MM" + "/YYYY"),
-    status: STATUS_PENDENTE,
-  },
-];
 
 function Status(status: string) {
   if (status === STATUS_RESERVADO) {
@@ -131,23 +97,23 @@ const Item = ({ item, onPress }) => (
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
             Ambiente:{" "}
           </Text>
-          <Text style={{ ...styles.title }}>{item.ambiente}</Text>
+          <Text style={{ ...styles.title }}>{item.nomeAmbiente}</Text>
         </View>
         <View style={styles.conteudoItem}>
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
             Solicitante:{" "}
           </Text>
-          <Text style={{ ...styles.title }}>{item.solicitante}</Text>
+          <Text style={{ ...styles.title }}>{item.nomeMorador}</Text>
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
             {"\t"}Apt:{" "}
           </Text>
-          <Text style={{ ...styles.title }}>{item.nApartamento}</Text>
+          <Text style={{ ...styles.title }}>{item.aptMorador}</Text>
         </View>
         <View style={styles.conteudoItem}>
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
             Data da reserva:{" "}
           </Text>
-          <Text style={{ ...styles.title }}>{item.dataReserva}</Text>
+          <Text style={{ ...styles.title }}>{item.data}</Text>
         </View>
         <View style={styles.conteudoItem}>
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
@@ -170,6 +136,19 @@ const Item = ({ item, onPress }) => (
 );
 
 export default function home() {
+  const dispatch = useDispatch();
+  const reservas = useSelector((state: any) => state.reservas);
+
+  const carregarReservas = async () => {
+    setCarregando(true);
+    await dispatch(listarTodasReservas());
+    setCarregando(false);
+  };
+
+  useEffect(() => {
+    carregarReservas();
+  }, []);
+
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
   const [selectedId, setSelectedId] = useState(null);
@@ -194,26 +173,27 @@ export default function home() {
   function filtroRetornDados(type: string, value: string) {
     const dadosFiltrados: any[] = [];
     if (type === FILTRO_STATUS) {
-      DATA.map(function (item) {
+      reservas.map(function (item: any) {
         if (item.status === value) {
           dadosFiltrados.push(item);
         }
       });
     } else if (type === FILTRO_HOJE) {
-      DATA.map(function (item) {
-        if (item.dataReserva === value) {
+      reservas.map(function (item: any) {
+        if (item.data === value) {
           dadosFiltrados.push(item);
         }
       });
     } else if (type === FILTRO_AMANHA) {
-      DATA.map(function (item) {
-        if (item.dataReserva === value) {
+      reservas.map(function (item: any) {
+        if (item.data === value) {
           dadosFiltrados.push(item);
         }
       });
     } else if (type === FILTRO_DEFAULT) {
-      DATA.map(function (item) {
-        dadosFiltrados.push(item);
+      reservas.map(function (item: any) {
+        if (item.status === STATUS_PENDENTE || item.status === STATUS_RESERVADO)
+          dadosFiltrados.push(item);
       });
     }
     return dadosFiltrados;
@@ -269,6 +249,13 @@ export default function home() {
                 style={{ ...styles.status, backgroundColor: Palette.orange }}
               ></View>
               <Text style={styles.textoBotaoModal}>Pendente</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.botaoModal}
+              key={2}
+              onPress={() => defineFiltro(FILTRO_DEFAULT, "", true)}
+            >
+              <Text style={styles.textoBotaoModal}>Limpar</Text>
             </TouchableOpacity>
           </View>
         </View>

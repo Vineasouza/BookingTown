@@ -164,7 +164,7 @@ export default function cadastro() {
         // dispatch(limparNovoUsuario());
         return paraPasso("sucesso");
       })
-      .catch((err) => paraPasso("erro"))
+      .catch((err) => (console.log(err), paraPasso("erro")))
       .then(() => {
         setCarregando(false);
         setCampoRequerido(false);

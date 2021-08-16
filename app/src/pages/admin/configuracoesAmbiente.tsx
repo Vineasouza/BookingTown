@@ -69,6 +69,7 @@ export default function configuracoesAmbiente() {
 
   const CASE_INICIAL = "inicial";
   const CASE_VISUALIZAR = "visualizar";
+  const CASE_VISUALIZAR_MAIS = "visualizar_mais";
   const CASE_ADICIONAR = "adicionar";
   const CASE_MODIFICAR = "modificar";
   const CASE_MODIFICAR_INPUT = "modificar_input";
@@ -80,13 +81,13 @@ export default function configuracoesAmbiente() {
   const [carregandoLista, setCarregandoLista] = useState<boolean>(false);
   const [errorAdicionar, setErrorAdicionar] = useState<boolean>(false);
   const [errorModificar, setErrorModificar] = useState<boolean>(false);
-  const [modificarAmbienteHook, setModificarAmbienteHook] = useState({
+  const [removerAmbiente, setRemoverAmbiente] = useState({
     id: { value: "" as string },
     nome: { value: "" as string },
     descricao: { value: "" as string },
     lotacaoMaxima: { value: "" as string },
   });
-  const [removerAmbiente, setRemoverAmbiente] = useState({
+  const [visualizar, setVisualizar] = useState({
     id: { value: "" as string },
     nome: { value: "" as string },
     descricao: { value: "" as string },
@@ -166,12 +167,6 @@ export default function configuracoesAmbiente() {
       <Item
         item={item}
         onPress={() => (
-          // setModificarAmbienteHook({
-          //   id: { value: item.id },
-          //   nome: { value: item.nome },
-          //   descricao: { value: item.descricao },
-          //   lotacaoMaxima: { value: item.lotacaoMaxima },
-          // }),
           console.log(item),
           dispatch(selecionarAmbienteAtual(item)),
           setPasso(CASE_MODIFICAR_INPUT)
@@ -199,7 +194,20 @@ export default function configuracoesAmbiente() {
   };
 
   const renderItemVisualizar = ({ item }) => {
-    return <Item item={item} onPress={() => null} />;
+    return (
+      <Item
+        item={item}
+        onPress={() => (
+          setVisualizar({
+            id: { value: item.id },
+            nome: { value: item.nome },
+            descricao: { value: item.descricao },
+            lotacaoMaxima: { value: item.lotacaoMaxima },
+          }),
+          setPasso(CASE_VISUALIZAR_MAIS)
+        )}
+      />
+    );
   };
 
   function handleRemover(id: any) {
@@ -346,6 +354,70 @@ export default function configuracoesAmbiente() {
             </SafeAreaView>
           </>
         );
+      case CASE_VISUALIZAR_MAIS:
+        return (
+          <>
+            <FAB
+              style={styles.fab}
+              small
+              icon={() => (
+                <AntDesign name="arrowleft" size={24} color={Palette.green} />
+              )}
+              onPress={() => setPasso(CASE_INICIAL)}
+              color={Palette.green}
+            />
+            <View style={styles.headerContainer}>
+              <Text style={styles.textoMaiorHeader}>
+                {visualizar.nome.value}
+              </Text>
+            </View>
+            <ScrollView style={styles.scrollContainer}>
+              <View style={styles.conteudoContainer}>
+                <View style={styles.conteudo}>
+                  <Text style={styles.textoLabelConteudo}>Ambiente: </Text>
+                  <Text style={styles.textoConteudo}>
+                    {visualizar.nome.value}
+                  </Text>
+                </View>
+                <View style={styles.conteudo}>
+                  <Text style={styles.textoLabelConteudo}>Descrição: </Text>
+                  <Text style={styles.textoConteudo}>
+                    {visualizar.descricao.value}
+                  </Text>
+                </View>
+                <View style={styles.conteudo}>
+                  <Text style={styles.textoLabelConteudo}>
+                    Lotação Máxima:{" "}
+                  </Text>
+                  <Text style={styles.textoConteudo}>
+                    {visualizar.lotacaoMaxima.value}
+                  </Text>
+                </View>
+              </View>
+              <TouchableNativeFeedback
+                background={TouchableNativeFeedback.Ripple(
+                  (rippleColor = "rgba(58, 51, 53, 0.1)"),
+                  (rippleOverflow = false),
+                  (rippleRadius = 120)
+                )}
+                onPress={() => setPasso(CASE_VISUALIZAR)}
+              >
+                <View
+                  style={{
+                    ...styles.touchableRemover,
+                    backgroundColor: Palette.green,
+                  }}
+                >
+                  {carregando ? (
+                    <ActivityIndicator size="small" color={Palette.white} />
+                  ) : (
+                    <Text style={styles.textoBotaoRemover}>Voltar</Text>
+                  )}
+                </View>
+              </TouchableNativeFeedback>
+            </ScrollView>
+          </>
+        );
       case CASE_ADICIONAR:
         return (
           <>
@@ -371,7 +443,7 @@ export default function configuracoesAmbiente() {
                   autoCompleteType="off"
                   keyboardType="default"
                   onChangeText={(e) => mudaValor("nome", e)}
-                  value={novoAmbiente.nome}
+                  value={novoAmbiente?.nome}
                   autoCapitalize="words"
                 />
                 <TextInput
@@ -383,7 +455,7 @@ export default function configuracoesAmbiente() {
                   keyboardType="default"
                   maxLength={100}
                   onChangeText={(e) => mudaValor("descricao", e)}
-                  value={novoAmbiente.descricao}
+                  value={novoAmbiente?.descricao}
                   autoCapitalize="none"
                 />
                 <TextInput
@@ -394,7 +466,7 @@ export default function configuracoesAmbiente() {
                   autoCompleteType="off"
                   keyboardType="numeric"
                   onChangeText={(e) => mudaValor("lotacaoMaxima", e)}
-                  value={novoAmbiente.lotacaoMaxima}
+                  value={novoAmbiente?.lotacaoMaxima}
                   autoCapitalize="none"
                   maxLength={3}
                 />

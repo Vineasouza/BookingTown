@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -12,38 +12,14 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 
+import { useDispatch, useSelector } from "react-redux";
+import { listarReservas } from "../../actions/reservasActions";
+
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles";
 import moment from "moment";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-
-const DATA = [
-  {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    ambiente: "Churrasqueira",
-    dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: "Reservado",
-  },
-  {
-    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-    ambiente: "Salão de festas",
-    dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: "Pendente",
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72",
-    ambiente: "Salão Gourmet",
-    dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: "Cancelado",
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d724",
-    ambiente: "Churrasqueira",
-    dataReserva: moment().format("DD" + "/MM" + "/YYYY"),
-    status: "Concluído",
-  },
-];
 
 function Status(status: string) {
   if (status === "Reservado") {
@@ -105,13 +81,13 @@ const Item = ({ item, onPress }) => (
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
             Ambiente:{" "}
           </Text>
-          <Text style={{ ...styles.title }}>{item.ambiente}</Text>
+          <Text style={{ ...styles.title }}>{item.nomeAmbiente}</Text>
         </View>
         <View style={styles.conteudoItem}>
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
             Data da reserva:{" "}
           </Text>
-          <Text style={{ ...styles.title }}>{item.dataReserva}</Text>
+          <Text style={{ ...styles.title }}>{item.data}</Text>
         </View>
         <View style={styles.conteudoItem}>
           <Text style={{ ...styles.title, fontFamily: Fonts.lato_bold }}>
@@ -134,9 +110,23 @@ const Item = ({ item, onPress }) => (
 );
 
 export default function reservas() {
+  const dispatch = useDispatch();
+
   const navigation = useNavigation();
   const [selectedId, setSelectedId] = useState(null);
   const [carregando, setCarregando] = useState(true);
+
+  const { uid } = useSelector((state: any) => state.user);
+  const reservas = useSelector((state: any) => state.reservas);
+  const carregarReservas = async () => {
+    setCarregando(true);
+    await dispatch(listarReservas(uid));
+    setCarregando(false);
+  };
+
+  useEffect(() => {
+    carregarReservas();
+  }, []);
 
   const renderItem = ({ item }) => {
     return (
@@ -162,8 +152,9 @@ export default function reservas() {
           <ActivityIndicator size={36} color={Palette.green} />
         ) : (
           <FlatList
-            data={DATA}
+            data={reservas}
             renderItem={renderItem}
+            key={reservas.id}
             keyExtractor={(item) => item.id}
             extraData={selectedId}
             showsVerticalScrollIndicator={false}

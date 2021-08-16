@@ -54,7 +54,7 @@ export default function home() {
     return (
       <Item
         item={item}
-        onPress={() => navigation.navigate("Reservar", { label: item.title })}
+        onPress={() => navigation.navigate("Reservar", { label: item })}
       />
     );
   };

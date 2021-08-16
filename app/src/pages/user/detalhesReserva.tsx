@@ -26,9 +26,9 @@ export default function detalhesReserva({ route }) {
   const [dados, setDados] = useState({
     id: "" as string,
     ambiente: "" as string,
-    descricao: "" as string,
+    // descricao: "" as string,
     dataReserva: "" as string,
-    lotacao: 0 as number,
+    // lotacao: 0 as number,
     status: "" as string,
   });
 
@@ -38,10 +38,10 @@ export default function detalhesReserva({ route }) {
   useEffect(() => {
     setDados({
       id: route.params.item.id,
-      ambiente: route.params.item.ambiente,
-      descricao: lorem,
-      lotacao: 10,
-      dataReserva: route.params.item.dataReserva,
+      ambiente: route.params.item.nomeAmbiente,
+      // descricao: lorem,
+      // lotacao: 10,
+      dataReserva: route.params.item.data,
       status: route.params.item.status,
     });
   }, []);
@@ -168,15 +168,15 @@ export default function detalhesReserva({ route }) {
             <Text style={styles.textoConteudoPrincipal}>Ambiente: </Text>
             <Text style={styles.textoConteudo}>{dados.ambiente}</Text>
           </View>
-          <View style={styles.conteudo}>
+          {/* <View style={styles.conteudo}>
             <Text style={styles.textoConteudoPrincipal}>Descrição: </Text>
             <Text style={styles.textoConteudo}>{dados.descricao}</Text>
-          </View>
-          <View style={styles.conteudo}>
+          </View> */}
+          {/* <View style={styles.conteudo}>
             <Text style={styles.textoConteudoPrincipal}>Lotação Máxima: </Text>
             <Text style={styles.textoConteudo}>{dados.lotacao + " "}</Text>
             <Text style={styles.textoConteudo}>Pessoas</Text>
-          </View>
+          </View> */}
           <View style={styles.conteudo}>
             <Text style={styles.textoConteudoPrincipal}>Dia da reserva: </Text>
             <Text style={styles.textoConteudo}>{dados.dataReserva}</Text>
