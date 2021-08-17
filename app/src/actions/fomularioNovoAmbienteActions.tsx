@@ -4,8 +4,3 @@ export const setNovoAmbiente = (campo: any, valor: any) => ({
   campo,
   valor,
 });
-
-export const LIMPAR_NOVO_AMBIENTE = "LIMPAR_NOVO_AMBIENTE";
-export const limparNovoAmbiente = () => ({
-  type: LIMPAR_NOVO_AMBIENTE,
-});

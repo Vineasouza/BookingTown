@@ -24,12 +24,6 @@ const atualizarReservaAction = (reserva: any) => ({
   reserva,
 });
 
-export const DELETAR_RESERVA = "DELETAR_RESERVA";
-const deletarReservaAction = (reservaId: any) => ({
-  type: DELETAR_RESERVA,
-  reservaId,
-});
-
 export const criarReserva = (reserva: any) => (dispatch) => {
   const db = firebase.database().ref("reservas");
 
@@ -86,9 +80,3 @@ export const atualizarReserva =
       .update(novosDadosDoReserva)
       .then(() => dispatch(atualizarReservaAction(novosDadosDoReserva)));
   };
-
-export const deletarReserva = (idReserva: any) => (dispatch: any) => {
-  const reservas = firebase.database().ref(`reservas/${idReserva}`);
-
-  return reservas.remove().then(dispatch(deletarReservaAction(idReserva)));
-};
