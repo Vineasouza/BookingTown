@@ -37,9 +37,6 @@ export default function reservar({ route }) {
   });
   const [data, setData] = useState(moment());
 
-  console.log(route.params.label.id);
-  console.log(usuario?.nome);
-
   function reservarAmbiente() {
     setCarregandoBotao(true);
 

@@ -167,7 +167,6 @@ export default function configuracoesAmbiente() {
       <Item
         item={item}
         onPress={() => (
-          console.log(item),
           dispatch(selecionarAmbienteAtual(item)),
           setPasso(CASE_MODIFICAR_INPUT)
         )}

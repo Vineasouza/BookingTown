@@ -11,6 +11,9 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
+import { useSelector, useDispatch } from "react-redux";
+import firebase from "firebase";
+import { atualizarReserva } from "../../actions/reservasActions";
 
 import Circles from "../../components/styles/circles2";
 import { Palette, Fonts } from "../../styles";
@@ -18,6 +21,7 @@ import { Palette, Fonts } from "../../styles";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function detalhesReserva({ route }) {
+  const dispatch = useDispatch();
   let rippleColor: string, rippleOverflow: boolean, rippleRadius: number;
   const navigation = useNavigation();
   const [carregando, setCarregando] = useState(true);
@@ -25,12 +29,35 @@ export default function detalhesReserva({ route }) {
   const [carregandoBotao, setCarregandoBotao] = useState(false);
   const [dados, setDados] = useState({
     id: "" as string,
-    ambiente: "" as string,
-    // descricao: "" as string,
-    dataReserva: "" as string,
-    // lotacao: 0 as number,
+    idMorador: "" as string,
+    idAmbiente: "" as string,
+    nomeAmbiente: "" as string,
+    nomeMorador: "" as string,
+    aptMorador: 0 as number,
+    data: "" as string,
     status: "" as string,
   });
+
+  function cancelarReserva() {
+    setCarregandoBotao(true);
+    const reservaAtualizada = {
+      ...dados,
+      status: "Cancelado",
+    };
+
+    (
+      dispatch(
+        atualizarReserva(reservaAtualizada)
+      ) as unknown as Promise<firebase.database.Reference>
+    )
+      .then(() => navigation.navigate("ReservaCancelada"))
+      .catch((err) => console.log(err));
+
+    setCarregandoBotao(false);
+  }
+
+  // console.log(route.params.item);
+  console.log(dados);
 
   const lorem =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Praesent bibendum ipsum sit amet mollis cursus. Nullam mauris purus, commodo efficitur maximus nec, placerat ac ante. Praesent justo eros, consequat ut ligula at, convallis faucibus orci.";
@@ -38,10 +65,12 @@ export default function detalhesReserva({ route }) {
   useEffect(() => {
     setDados({
       id: route.params.item.id,
-      ambiente: route.params.item.nomeAmbiente,
-      // descricao: lorem,
-      // lotacao: 10,
-      dataReserva: route.params.item.data,
+      idMorador: route.params.item.idMorador,
+      idAmbiente: route.params.item.idAmbiente,
+      nomeAmbiente: route.params.item.nomeAmbiente,
+      nomeMorador: route.params.item.nomeMorador,
+      aptMorador: route.params.item.aptMorador,
+      data: route.params.item.data,
       status: route.params.item.status,
     });
   }, []);
@@ -127,7 +156,7 @@ export default function detalhesReserva({ route }) {
                 </View>
               </TouchableNativeFeedback>
               <TouchableNativeFeedback
-                onPress={() => navegar()}
+                onPress={() => cancelarReserva()}
                 background={TouchableNativeFeedback.Ripple(
                   (rippleColor = "rgba(235, 87, 87, 0.1)"),
                   (rippleOverflow = true),
@@ -154,7 +183,9 @@ export default function detalhesReserva({ route }) {
         </View>
       </Modal>
       <View style={styles.headerContainer}>
-        <Text style={styles.textoHeader}>{"Reserva " + dados.ambiente}</Text>
+        <Text style={styles.textoHeader}>
+          {"Reserva " + dados.nomeAmbiente}
+        </Text>
       </View>
       {carregando ? (
         <ActivityIndicator
@@ -166,7 +197,7 @@ export default function detalhesReserva({ route }) {
         <ScrollView style={styles.conteudoContainer}>
           <View style={styles.conteudo}>
             <Text style={styles.textoConteudoPrincipal}>Ambiente: </Text>
-            <Text style={styles.textoConteudo}>{dados.ambiente}</Text>
+            <Text style={styles.textoConteudo}>{dados.nomeAmbiente}</Text>
           </View>
           {/* <View style={styles.conteudo}>
             <Text style={styles.textoConteudoPrincipal}>Descrição: </Text>
@@ -179,7 +210,7 @@ export default function detalhesReserva({ route }) {
           </View> */}
           <View style={styles.conteudo}>
             <Text style={styles.textoConteudoPrincipal}>Dia da reserva: </Text>
-            <Text style={styles.textoConteudo}>{dados.dataReserva}</Text>
+            <Text style={styles.textoConteudo}>{dados.data}</Text>
           </View>
           <View style={styles.conteudo}>
             <Text style={styles.textoConteudoPrincipal}>Status: </Text>
